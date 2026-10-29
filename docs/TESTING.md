@@ -4,8 +4,8 @@
 
 | Suite | Command | Where | Result (2026-10-29) |
 | --- | --- | --- | --- |
-| JVM unit tests | `./gradlew :app:testDebugUnitTest` | `app/src/test` | 212 passed, 0 failed |
-| Instrumented tests | `./gradlew :app:connectedDebugAndroidTest` | `app/src/androidTest` | 42 passed, 0 failed (Pixel 6, Android 17) |
+| JVM unit tests | `./gradlew :app:testDebugUnitTest` | `app/src/test` | 268 passed, 0 failed |
+| Instrumented tests | `./gradlew :app:connectedDebugAndroidTest` | `app/src/androidTest` | 53 passed, 0 failed (Pixel 6, Android 17) |
 | Android Lint | `./gradlew :app:lintDebug` | — | 0 errors, 22 warnings (unused resources, plural suggestions, obsolete SDK checks) |
 | Offline check | `./gradlew :app:verifyOfflineManifestRelease` | build | passes: only `INTERNET` (update check); no network-state, Wi-Fi-state, broad-storage or advertising-ID permission |
 | Release verification | `scripts/verify-apk.sh` | CI | signature v2+, not debug-signed, application id, version, no forbidden permission |
@@ -72,6 +72,17 @@ something deleted moments earlier (database foreign-key violation); undo of a sh
 focus timer on a deleted task; a double tap completing two occurrences of a repeating task in the app; long-overdue
 repeating tasks not catching up past ~27 years; negative amounts losing their minus sign; navigation labels breaking
 mid-word at large font sizes.
+
+### New features, on the Pixel 6
+
+| Feature | Result |
+| --- | --- |
+| Database upgrade 1 → 2 on the phone's existing data | Upgraded in place; data kept (also covered by `MigrationTest`) |
+| Plans (this week / month / year) | Today Plans section, Plans view, editor “Plan for”, Quick Add “sometime next week” |
+| Day reset time 4:00 AM, phone time 1:59 AM (time zone switched briefly) | Today showed the previous day; back to Midnight showed the new day |
+| Streaks | Rows, editor history dots, Today routine nudge, routine widget, Insights |
+| Subtasks | Expand in Today and tick from the list; editor section, add several in a row |
+| Update check | Consent dialog; automatic check and “Check now” report “no release yet” (none published); popup and Download verified against another public repository's latest release in a temporary test build |
 
 ## Manual QA on a real device
 

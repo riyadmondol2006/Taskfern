@@ -16,6 +16,22 @@ named `vMAJOR.MINOR.BUILD` (see [docs/RELEASING.md](docs/RELEASING.md)); the rel
   `api.github.com` at most once a day, nothing about you or your tasks is sent). The build and release checks still
   reject network-state, Wi-Fi-state, broad storage and advertising-ID permissions.
 
+## Unreleased
+
+### Added
+- Plans: tasks for a week, month or year, with a Plans view and a Today section (database version 2, migrated
+  automatically).
+- Subtasks inside every task: a Subtasks section in the editor and expandable subtasks in every list.
+- Streaks for routines and repeating tasks on Today, task rows, the editor, the routine widget and Insights.
+- Quick Add understands repeats (“every monday and thursday”, “every 3 days”, “monthly”) and plans (“this month”).
+- New day starts at: choose when “today” rolls over.
+
+### Fixed
+- Crashes when acting on a task, list or routine that had just been deleted (stale widgets, open screens, undo).
+- A fast double tap on a repeating task in the app could complete two occurrences.
+- Long-overdue repeating tasks now catch up in one step; negative amounts keep their minus sign; navigation labels
+  no longer break mid-word at large font sizes.
+
 ## 1.0 — first public release
 
 ### Added
