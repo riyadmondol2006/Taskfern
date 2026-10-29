@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Event driven: updatePeriodMillis is 0 and the app pushes updates after data changes and at midnight. -->
+<!-- targetCell*, maxResize*, previewLayout and widgetFeatures are read by Android 12+ (9+ for widgetFeatures); older
+     launchers use minWidth/minHeight and always run the configuration screen. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UnusedAttribute"
+    android:description="@string/widget_quick_add_picker_description"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="40dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="400dp"
+    android:maxResizeHeight="110dp"
+    android:targetCellWidth="1"
+    android:targetCellHeight="1"
+    android:previewLayout="@layout/widget_preview_quick_add"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:configure="com.riyadmondol2006.taskfern.widget.config.QuickAddWidgetConfigActivity"
+    android:widgetFeatures="reconfigurable|configuration_optional"
+    android:widgetCategory="home_screen" />
