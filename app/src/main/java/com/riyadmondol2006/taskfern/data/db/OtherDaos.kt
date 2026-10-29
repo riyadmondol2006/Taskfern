@@ -116,6 +116,22 @@ interface ShoppingDao {
 
     @Query("SELECT * FROM shopping_items")
     suspend fun allItems(): List<ShoppingItemEntity>
+
+    // Backup: explicit-id import and clearing.
+    @Insert
+    suspend fun importLists(lists: List<ShoppingListEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun importMemory(memory: List<ItemMemoryEntity>)
+
+    @Query("DELETE FROM shopping_items")
+    suspend fun clearItems()
+
+    @Query("DELETE FROM shopping_lists")
+    suspend fun clearLists()
+
+    @Query("DELETE FROM item_memory")
+    suspend fun clearMemory()
 }
 
 data class RoutineStepWithCheck(
@@ -214,6 +230,22 @@ interface RoutineDao {
 
     @Query("SELECT * FROM routine_steps")
     suspend fun allSteps(): List<RoutineStepEntity>
+
+    // Backup: explicit-id import and clearing.
+    @Insert
+    suspend fun importRoutines(routines: List<RoutineEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun importChecks(checks: List<RoutineCheckEntity>)
+
+    @Query("DELETE FROM routine_checks")
+    suspend fun clearAllChecks()
+
+    @Query("DELETE FROM routine_steps")
+    suspend fun clearSteps()
+
+    @Query("DELETE FROM routines")
+    suspend fun clearRoutines()
 }
 
 @Dao
@@ -238,6 +270,10 @@ interface TemplateDao {
 
     @Query("DELETE FROM templates WHERE id = :id")
     suspend fun delete(id: Long)
+
+    // Backup: clearing before a replace.
+    @Query("DELETE FROM templates")
+    suspend fun clearAll()
 }
 
 @Dao
@@ -259,6 +295,13 @@ interface FocusDao {
 
     @Query("SELECT * FROM focus_sessions")
     suspend fun all(): List<FocusSessionEntity>
+
+    // Backup: explicit-id import and clearing.
+    @Insert
+    suspend fun importAll(sessions: List<FocusSessionEntity>)
+
+    @Query("DELETE FROM focus_sessions")
+    suspend fun clearAll()
 }
 
 @Dao

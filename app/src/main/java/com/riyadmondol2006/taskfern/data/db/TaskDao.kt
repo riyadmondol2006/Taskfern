@@ -241,4 +241,42 @@ interface TaskDao {
 
     @Query("SELECT * FROM occurrence_log WHERE task_id = :taskId ORDER BY at DESC LIMIT 60")
     fun observeLog(taskId: Long): Flow<List<OccurrenceLogEntity>>
+
+    // ---- Backup: whole-table export, explicit-id import and clearing (used by the backup package) -------------------
+
+    @Query("SELECT * FROM tasks ORDER BY id")
+    suspend fun exportTasks(): List<TaskEntity>
+
+    @Query("SELECT * FROM subtasks ORDER BY id")
+    suspend fun exportSubtasks(): List<SubtaskEntity>
+
+    @Query("SELECT * FROM reminders ORDER BY id")
+    suspend fun exportReminders(): List<ReminderEntity>
+
+    @Query("SELECT * FROM occurrence_log ORDER BY id")
+    suspend fun exportOccurrenceLog(): List<OccurrenceLogEntity>
+
+    @Insert
+    suspend fun importLists(lists: List<TaskListEntity>)
+
+    @Insert
+    suspend fun importTasks(tasks: List<TaskEntity>)
+
+    @Insert
+    suspend fun importOccurrenceLog(entries: List<OccurrenceLogEntity>)
+
+    @Query("DELETE FROM occurrence_log")
+    suspend fun clearOccurrenceLog()
+
+    @Query("DELETE FROM reminders")
+    suspend fun clearAllReminders()
+
+    @Query("DELETE FROM subtasks")
+    suspend fun clearSubtasks()
+
+    @Query("DELETE FROM tasks")
+    suspend fun clearTasks()
+
+    @Query("DELETE FROM task_lists")
+    suspend fun clearLists()
 }
