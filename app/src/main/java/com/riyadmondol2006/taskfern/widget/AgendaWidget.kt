@@ -2,7 +2,6 @@ package com.riyadmondol2006.taskfern.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -31,10 +30,7 @@ import com.riyadmondol2006.taskfern.ui.common.Formatters
 import java.time.LocalDate
 
 /** Tasks for today and the next six days, grouped by day, with an overdue badge. */
-class AgendaWidget : TaskfernWidget<AgendaModel>(
-    WidgetKind.AGENDA,
-    setOf(DpSize(180.dp, 110.dp), DpSize(250.dp, 180.dp), DpSize(250.dp, 300.dp)),
-) {
+class AgendaWidget : TaskfernWidget<AgendaModel>(WidgetKind.AGENDA) {
     override suspend fun load(context: Context, appWidgetId: Int): AgendaModel = WidgetData.agenda(context)
 
     @Composable

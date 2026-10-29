@@ -2,7 +2,6 @@ package com.riyadmondol2006.taskfern.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
@@ -32,10 +31,7 @@ import com.riyadmondol2006.taskfern.data.db.WidgetKind
 import com.riyadmondol2006.taskfern.widget.config.ShoppingWidgetConfigActivity
 
 /** One shopping list (chosen per instance) with check-off buttons. */
-class ShoppingWidget : TaskfernWidget<ShoppingModel>(
-    WidgetKind.SHOPPING,
-    setOf(DpSize(110.dp, 110.dp), DpSize(180.dp, 180.dp), DpSize(250.dp, 250.dp)),
-) {
+class ShoppingWidget : TaskfernWidget<ShoppingModel>(WidgetKind.SHOPPING) {
     override suspend fun load(context: Context, appWidgetId: Int): ShoppingModel = WidgetData.shopping(context, appWidgetId)
 
     @Composable
@@ -122,8 +118,8 @@ private fun ShoppingList(model: ShoppingModel.Showing, appWidgetId: Int, compact
             FittingRows(
                 items = model.items,
                 alreadyHidden = model.hiddenCount,
-                rowHeight = 48.dp,
-                reservedHeight = 80.dp,
+                rowHeight = 44.dp,
+                reservedHeight = 76.dp,
                 moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
                 modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
             ) { item -> ShoppingItemRow(item) }

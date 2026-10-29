@@ -2,7 +2,6 @@ package com.riyadmondol2006.taskfern.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -34,10 +33,7 @@ import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.widget.config.RoutineWidgetConfigActivity
 
 /** Today's checklist of one routine (chosen per instance). */
-class RoutineWidget : TaskfernWidget<RoutineModel>(
-    WidgetKind.ROUTINE,
-    setOf(DpSize(110.dp, 110.dp), DpSize(180.dp, 180.dp), DpSize(250.dp, 250.dp)),
-) {
+class RoutineWidget : TaskfernWidget<RoutineModel>(WidgetKind.ROUTINE) {
     override suspend fun load(context: Context, appWidgetId: Int): RoutineModel = WidgetData.routine(context, appWidgetId)
 
     @Composable
@@ -132,8 +128,8 @@ private fun RoutineChecklist(model: RoutineModel.Showing, appWidgetId: Int, comp
             else -> FittingRows(
                 items = model.steps,
                 alreadyHidden = 0,
-                rowHeight = 48.dp,
-                reservedHeight = 88.dp,
+                rowHeight = 44.dp,
+                reservedHeight = 90.dp,
                 moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
                 modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
             ) { step -> StepRow(step, model) }

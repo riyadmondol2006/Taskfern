@@ -287,10 +287,12 @@ fun <T> FittingRows(
     modifier: GlanceModifier = GlanceModifier,
     row: @Composable (T) -> Unit,
 ) {
-    val available = androidx.glance.LocalSize.current.height - reservedHeight
-    val capacity = (available.value / rowHeight.value).toInt().coerceIn(1, 8)
-    val needsMoreLine = items.size > capacity || alreadyHidden > 0
-    val shown = items.take(if (needsMoreLine && items.size >= capacity) (capacity - 1).coerceAtLeast(1) else capacity)
+    val available = (androidx.glance.LocalSize.current.height - reservedHeight).value
+    val fitAll = (available / rowHeight.value).toInt()
+    val total = items.size + alreadyHidden
+    // Everything fits: show it all. Otherwise keep room for the one-line "+N more" summary (about 28 dp).
+    val count = if (total <= fitAll) items.size else ((available - 28f) / rowHeight.value).toInt()
+    val shown = items.take(count.coerceIn(1, 8))
     val hidden = alreadyHidden + (items.size - shown.size)
     Column(modifier = modifier) {
         shown.forEach { row(it) }

@@ -2,7 +2,6 @@ package com.riyadmondol2006.taskfern.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -31,14 +30,7 @@ import com.riyadmondol2006.taskfern.ui.common.Formatters
 import java.time.LocalDate
 
 /** Today's tasks: overdue + due today, with check-off, progress and Quick Add. */
-class TodayWidget : TaskfernWidget<TodayModel>(
-    WidgetKind.TODAY,
-    setOf(
-        DpSize(120.dp, 100.dp), DpSize(220.dp, 100.dp),
-        DpSize(160.dp, 150.dp), DpSize(250.dp, 150.dp),
-        DpSize(250.dp, 260.dp), DpSize(320.dp, 340.dp),
-    ),
-) {
+class TodayWidget : TaskfernWidget<TodayModel>(WidgetKind.TODAY) {
     override suspend fun load(context: Context, appWidgetId: Int): TodayModel = WidgetData.today(context)
 
     @Composable
@@ -154,8 +146,8 @@ private fun TodayList(model: TodayModel, appWidgetId: Int, detailed: Boolean) {
             FittingRows(
                 items = model.tasks,
                 alreadyHidden = model.hiddenCount,
-                rowHeight = if (detailed) 60.dp else 52.dp,
-                reservedHeight = 112.dp,
+                rowHeight = if (detailed) 56.dp else 50.dp,
+                reservedHeight = 104.dp,
                 moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
                 modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
             ) { task -> TodayTaskRow(task, model.today, detailed) }

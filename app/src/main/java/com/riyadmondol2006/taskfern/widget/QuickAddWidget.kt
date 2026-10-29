@@ -3,7 +3,6 @@ package com.riyadmondol2006.taskfern.widget
 import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
@@ -41,10 +40,7 @@ import com.riyadmondol2006.taskfern.data.db.WidgetKind
  * A launcher-style button that opens the Quick Add sheet with this instance's default list and due date. Widgets
  * cannot take text input, so typing happens in the sheet.
  */
-class QuickAddWidget : TaskfernWidget<QuickAddModel>(
-    WidgetKind.QUICK_ADD,
-    setOf(DpSize(48.dp, 48.dp), DpSize(110.dp, 48.dp)),
-) {
+class QuickAddWidget : TaskfernWidget<QuickAddModel>(WidgetKind.QUICK_ADD) {
     override suspend fun load(context: Context, appWidgetId: Int): QuickAddModel = WidgetData.quickAdd(context, appWidgetId)
 
     @Composable
