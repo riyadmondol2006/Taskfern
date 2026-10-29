@@ -6,7 +6,8 @@ very welcome.
 ## Before you start
 
 - For bugs, open an issue with steps to reproduce, your phone model and Android version, and the Taskfern version.
-- For features, open an issue first so we can agree that it fits (no accounts, no network, no trackers, no ads).
+- For features, open an issue first so we can agree that it fits (no accounts, no network beyond the opt-in update
+  check, no trackers, no ads).
 
 ## Development setup
 
@@ -30,8 +31,9 @@ very welcome.
   directly.
 - Every database change needs a Room migration, an exported schema in `app/schemas/` and a migration test. Never use
   destructive migrations.
-- Do not add the `INTERNET` permission, analytics, ads or proprietary SDKs. The build fails if a network permission
-  appears in the merged manifest.
+- Do not add network features, analytics, ads or proprietary SDKs. `INTERNET` exists only for the opt-in update
+  check; the build fails if network-state, Wi-Fi-state, broad storage or advertising-ID permissions appear in the
+  merged manifest.
 - User-visible text goes in string resources; keep it short, friendly and specific.
 - Keep accessibility in mind: content descriptions, 48 dp touch targets, and layouts that work with large fonts.
 

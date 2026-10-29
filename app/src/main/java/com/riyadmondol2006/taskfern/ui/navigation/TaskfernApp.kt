@@ -73,6 +73,7 @@ import com.riyadmondol2006.taskfern.ui.tasks.SearchScreen
 import com.riyadmondol2006.taskfern.ui.tasks.TaskListScreen
 import com.riyadmondol2006.taskfern.ui.tasks.TasksHomeScreen
 import com.riyadmondol2006.taskfern.ui.today.TodayScreen
+import com.riyadmondol2006.taskfern.ui.update.UpdatePrompts
 import kotlin.reflect.KClass
 
 private data class TopLevel(
@@ -207,6 +208,8 @@ fun TaskfernAppRoot(pendingDeepLink: Uri?, onDeepLinkHandled: () -> Unit) {
         quickAdd?.let { defaults ->
             QuickAddSheet(defaults = defaults, onDismiss = { quickAdd = null })
         }
+        // Update question and popup, above every screen.
+        UpdatePrompts()
     }
 }
 

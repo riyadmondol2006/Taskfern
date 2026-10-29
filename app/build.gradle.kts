@@ -51,7 +51,11 @@ fun signingValue(propKey: String, envKey: String): String? =
 
 val requireSigning = providers.environmentVariable("TASKFERN_REQUIRE_SIGNING").orNull == "true"
 
-/** Fails the build when the merged manifest asks for a network or broad-storage permission. Taskfern is offline. */
+/**
+ * Fails the build when the merged manifest asks for a permission Taskfern must not have. INTERNET is allowed only for
+ * the optional, user-approved update check (see the update package); network-state, Wi-Fi-state, broad storage and
+ * advertising-ID permissions stay forbidden, so a dependency cannot quietly add them.
+ */
 abstract class VerifyOfflineManifestTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -63,7 +67,6 @@ abstract class VerifyOfflineManifestTask : DefaultTask() {
         val declared = Regex("""<uses-permission[^>]*android:name="([^"]+)"""")
             .findAll(text).map { it.groupValues[1] }.toSet()
         val forbidden = setOf(
-            "android.permission.INTERNET",
             "android.permission.ACCESS_NETWORK_STATE",
             "android.permission.ACCESS_WIFI_STATE",
             "android.permission.READ_EXTERNAL_STORAGE",
@@ -72,9 +75,22 @@ abstract class VerifyOfflineManifestTask : DefaultTask() {
             "com.google.android.gms.permission.AD_ID",
         )
         val offending = declared.intersect(forbidden)
-        check(offending.isEmpty()) { "Taskfern must stay offline, but the merged manifest declares: $offending" }
+        check(offending.isEmpty()) {
+            "Taskfern may only use the network for the update check, but the merged manifest declares: $offending"
+        }
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Update check. The app asks GitHub for the latest release of this repository (owner/name). Forks can point it at their
+// own repository with -Ptaskfern.updateRepo=owner/name.
+// ---------------------------------------------------------------------------------------------------------------------
+val updateRepo: String = providers.gradleProperty("taskfern.updateRepo").orNull?.trim()?.takeIf { it.isNotEmpty() }
+    ?.also {
+        if (!Regex("[A-Za-z0-9-]+/[A-Za-z0-9._-]+").matches(it)) {
+            throw GradleException("taskfern.updateRepo '$it' must look like owner/repository")
+        }
+    } ?: "riyadmondol2006/Taskfern"
 
 android {
     namespace = "com.riyadmondol2006.taskfern"
@@ -89,6 +105,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         buildConfigField("String", "REPO_URL", "\"https://github.com/riyadmondol2006/Taskfern\"")
+        buildConfigField("String", "UPDATE_REPO", "\"$updateRepo\"")
     }
 
     signingConfigs {

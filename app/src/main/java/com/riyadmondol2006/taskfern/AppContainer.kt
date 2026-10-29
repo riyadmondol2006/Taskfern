@@ -12,6 +12,8 @@ import com.riyadmondol2006.taskfern.data.repo.TemplateRepository
 import com.riyadmondol2006.taskfern.focus.FocusController
 import com.riyadmondol2006.taskfern.reminders.DailyWork
 import com.riyadmondol2006.taskfern.reminders.ReminderScheduler
+import com.riyadmondol2006.taskfern.update.UpdateChecker
+import com.riyadmondol2006.taskfern.update.UpdateController
 import com.riyadmondol2006.taskfern.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,9 @@ class AppContainer(context: Context) {
     val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, tasks, routines, settings) }
     val widgets: WidgetUpdater by lazy { WidgetUpdater(appContext, appScope) }
     val focus: FocusController by lazy { FocusController(appContext, focusRepository, reminders) }
+
+    /** Optional update check against GitHub Releases; the app's only network use, and only after the user agrees. */
+    val updates: UpdateController by lazy { UpdateController(settings, UpdateChecker(), appScope) }
 
     /**
      * Keeps [LogicalDay] in step with the "New day starts at" setting. When it changes, the nightly job moves and

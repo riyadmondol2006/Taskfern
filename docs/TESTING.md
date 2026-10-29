@@ -7,8 +7,8 @@
 | JVM unit tests | `./gradlew :app:testDebugUnitTest` | `app/src/test` | 212 passed, 0 failed |
 | Instrumented tests | `./gradlew :app:connectedDebugAndroidTest` | `app/src/androidTest` | 42 passed, 0 failed (Pixel 6, Android 17) |
 | Android Lint | `./gradlew :app:lintDebug` | — | 0 errors, 22 warnings (unused resources, plural suggestions, obsolete SDK checks) |
-| Offline check | `./gradlew :app:verifyOfflineManifestRelease` | build | passes: no network or broad-storage permission |
-| Release verification | `scripts/verify-apk.sh` | CI | signature v2+, not debug-signed, application id, version, no `INTERNET` |
+| Offline check | `./gradlew :app:verifyOfflineManifestRelease` | build | passes: only `INTERNET` (update check); no network-state, Wi-Fi-state, broad-storage or advertising-ID permission |
+| Release verification | `scripts/verify-apk.sh` | CI | signature v2+, not debug-signed, application id, version, no forbidden permission |
 
 What the unit tests cover:
 

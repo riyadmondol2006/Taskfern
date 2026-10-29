@@ -13,7 +13,7 @@
   <a href="https://github.com/riyadmondol2006/Taskfern/actions/workflows/release.yml"><img alt="Release workflow" src="https://github.com/riyadmondol2006/Taskfern/actions/workflows/release.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2F6B4F"></a>
   <img alt="Android 8.0 or newer" src="https://img.shields.io/badge/Android-8.0%2B-2F6B4F">
-  <img alt="No internet permission" src="https://img.shields.io/badge/internet%20permission-none-2F6B4F">
+  <img alt="No tracking" src="https://img.shields.io/badge/tracking-none-2F6B4F">
 </p>
 
 <p align="center">
@@ -24,7 +24,8 @@ Taskfern is a **free Android task manager** and **daily planner** that keeps eve
 on a calm Today dashboard, add tasks in a couple of taps, get **reliable reminders**, repeat tasks the way you
 actually need, tick off groceries one-handed, follow daily routines and check things off right from your **home-screen
 widgets**. It is an **open-source Android productivity app** built with Kotlin and Jetpack Compose — no account,
-no ads, no trackers and no internet permission.
+no ads and no trackers. The only time it goes online is an optional, once-a-day check for a new version that you
+can turn off.
 
 <p align="center">
   <img src="docs/screenshots/01-today.png" width="24%" alt="Today dashboard with progress, overdue and today's tasks">
@@ -63,6 +64,8 @@ no ads, no trackers and no internet permission.
 - **Material You to-do app** — dynamic colour, light, dark and AMOLED black themes, five accent palettes.
 - **Offline task manager** — JSON backup and restore (merge or replace), calendar (.ics) export, focus timer and
   quiet insights. Everything works without a connection.
+- **Update popup** — if you allow it, Taskfern checks GitHub once a day and offers a newer release with its notes and
+  a one-tap download.
 
 ## Screenshots
 
@@ -190,12 +193,16 @@ your wallpaper (Android 12+) or pick one of five accent palettes: Fern, Moss, Oc
 ## Offline-first design
 
 Taskfern stores everything in an on-device database and works the same in flight mode. There is no sync server and
-no sign-in. The download is about 4 MB, and a cold start took about 0.2 s on the test Pixel 6.
+no sign-in. The optional update check is the only network use, and the app works the same without it. The download is about 4 MB, and a cold start took about 0.2 s on the test Pixel 6.
 
 ## Privacy
 
 - No account, no ads, no analytics, no crash reporting, no Google Play services or Firebase.
-- **No `INTERNET` permission** — the build fails if any dependency tries to add one.
+- **One optional network request.** Taskfern has the `INTERNET` permission only for the update check. On the first
+  start it asks whether to check automatically; if you agree, it sends one HTTPS request to `api.github.com` at most
+  once a day to read the newest version number. Nothing about you or your tasks is sent; like any web request, GitHub
+  sees your IP address. Turn it off any time in *Settings → Updates*.
+- The build fails if a dependency adds network-state, Wi-Fi-state, broad storage or advertising-ID permissions.
 - Android cloud backup is disabled for Taskfern; your backups are files you choose where to keep.
 
 See [PRIVACY.md](PRIVACY.md).
@@ -235,9 +242,15 @@ The release notes also show the SHA-256 fingerprint of the signing certificate; 
 
 ## Updating the app
 
-Download the newer APK from the latest release and install it over the existing app — your data stays. Android only
-accepts an update signed with the **same key** as the installed app, so an update cannot be swapped for a tampered
-copy. Taskfern does not update itself and never installs anything on its own. Before big changes (a new phone, a
+If you turned on *Check for updates automatically* (asked on first start, or *Settings → Updates*), Taskfern shows a
+popup when a newer release is published: the new version, short release notes and three buttons — **Download** opens
+the APK in your browser, **Later** asks again after the next daily check, **Skip this version** stays quiet until an
+even newer one appears. *Settings → Updates → Check now* checks right away.
+
+Open the downloaded APK and install it over the existing app — your data stays. Android only accepts an update signed
+with the **same key** as the installed app, so an update cannot be swapped for a tampered copy. Taskfern never
+downloads or installs anything itself; your browser downloads the file and Android installs it after you confirm.
+Without the update check, download the newer APK from the latest release yourself. Before big changes (a new phone, a
 factory reset) export a backup.
 
 ## Building from source
@@ -302,6 +315,13 @@ how you get your data back.
 **Is Taskfern really free?** Yes. No subscriptions, no ads, no paid tiers. It is MIT-licensed.
 
 **Does it sync between devices?** No. Taskfern is deliberately offline. Use backup and restore to move data.
+
+**Does Taskfern go online?** Only for the optional update check: at most once a day it asks GitHub for the newest
+release. It sends no data about you or your tasks, and you can turn it off in *Settings → Updates*.
+
+**How do I get updates?** With the update check on, Taskfern shows a popup when a new version is out; tap
+**Download**, open the file and install it over the current app. Otherwise download it from the
+[latest release](https://github.com/riyadmondol2006/Taskfern/releases/latest).
 
 **Why isn't it on Google Play?** It is published on GitHub Releases, where every build is reproducible from the
 public source and signed by the project.
