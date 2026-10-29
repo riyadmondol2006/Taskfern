@@ -141,6 +141,7 @@ class BackupService(private val context: Context, private val container: AppCont
             if (s.currencySymbol != current.currencySymbol) repo.setCurrencySymbol(s.currencySymbol)
             if (s.focusMinutes != current.focusMinutes) repo.setFocusMinutes(s.focusMinutes)
             if (s.trashRetentionDays != current.trashRetentionDays) repo.setTrashRetentionDays(s.trashRetentionDays)
+            if (s.dayStartMinutes != current.dayStartMinutes) repo.setDayStartMinutes(s.dayStartMinutes)
         }
     }
 }

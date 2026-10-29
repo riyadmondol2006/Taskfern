@@ -240,4 +240,6 @@ data class BackupSettings(
     val currencySymbol: String? = null,
     val focusMinutes: Int? = null,
     val trashRetentionDays: Int? = null,
+    /** "New day starts at", minutes after midnight. */
+    val dayStartMinutes: Int? = null,
 )

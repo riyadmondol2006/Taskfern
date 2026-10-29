@@ -172,6 +172,7 @@ object BackupValidator {
             p.time(at, "dailyAgendaTime", s.dailyAgendaTime)
             s.focusMinutes?.let { p.require(it in 1..180, "$at: focus length $it is not between 1 and 180 minutes.") }
             s.trashRetentionDays?.let { p.require(it in 1..365, "$at: trash retention $it is not between 1 and 365 days.") }
+            s.dayStartMinutes?.let { p.require(it in 0..com.riyadmondol2006.taskfern.domain.LogicalDay.MAX_START_MINUTES, "$at: day start $it is out of range.") }
         }
 
         return p.list

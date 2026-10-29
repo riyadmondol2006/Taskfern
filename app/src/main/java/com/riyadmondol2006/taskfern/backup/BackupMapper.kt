@@ -238,6 +238,7 @@ object BackupMapper {
         currencySymbol = s.currencySymbol,
         focusMinutes = s.focusMinutes,
         trashRetentionDays = s.trashRetentionDays,
+        dayStartMinutes = s.dayStartMinutes,
     )
 
     /** [current] with every field present in [b] applied. Internal flags are always kept from [current]. */
@@ -259,6 +260,7 @@ object BackupMapper {
         currencySymbol = b.currencySymbol?.trim()?.take(4) ?: current.currencySymbol,
         focusMinutes = b.focusMinutes ?: current.focusMinutes,
         trashRetentionDays = b.trashRetentionDays ?: current.trashRetentionDays,
+        dayStartMinutes = b.dayStartMinutes ?: current.dayStartMinutes,
     )
 
 private fun scopeName(scope: Int): String? = when (scope) {
