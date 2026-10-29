@@ -51,6 +51,13 @@ class ShoppingRepository(
         events.shoppingChanged(listOf(id))
     }
 
+    /** Renames and recolours a list in one write (the list editor dialog changes both). */
+    suspend fun updateList(id: Long, name: String, color: Int) {
+        val list = dao.getList(id) ?: return
+        dao.updateList(list.copy(name = name.trim().ifEmpty { list.name }, color = color))
+        events.shoppingChanged(listOf(id))
+    }
+
     suspend fun deleteList(id: Long) {
         dao.deleteList(id)
         events.shoppingChanged(listOf(id))

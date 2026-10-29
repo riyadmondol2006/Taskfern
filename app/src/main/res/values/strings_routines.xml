@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Routines list -->
+    <string name="routines_title">Routines</string>
+    <string name="routines_new">New routine</string>
+    <string name="routines_from_template">From a template</string>
+    <string name="routines_no_templates">No routine templates yet. Create one in Templates to start a routine in one tap.</string>
+    <string name="routines_empty_title">Build a calm daily rhythm</string>
+    <string name="routines_empty_message">A routine is a reusable checklist for a part of your day, like a morning start or an evening wind-down. Tick the steps each day; tomorrow starts fresh, and your history shows how it is going.</string>
+    <string name="routines_section_today">Today</string>
+    <string name="routines_section_other">Other days</string>
+    <string name="routines_none_today">Nothing scheduled for today</string>
+    <string name="routines_all_done_today">All of today’s routines are done</string>
+    <plurals name="routines_today_progress">
+        <item quantity="one">%1$d of %2$d routine done today</item>
+        <item quantity="other">%1$d of %2$d routines done today</item>
+    </plurals>
+    <plurals name="routines_steps_progress">
+        <item quantity="one">%1$d of %2$d step</item>
+        <item quantity="other">%1$d of %2$d steps</item>
+    </plurals>
+    <string name="routines_done_today">Done for today</string>
+    <string name="routines_no_steps">No steps yet</string>
+    <string name="routines_next_run">Next %1$s</string>
+    <string name="routines_expand">Show steps</string>
+    <string name="routines_collapse">Hide steps</string>
+    <string name="routines_details">Details</string>
+    <string name="routines_mark_all_done">Mark all done</string>
+
+    <!-- Schedules -->
+    <string name="routines_every_day">Every day</string>
+    <string name="routines_weekdays">Weekdays</string>
+    <string name="routines_weekends">Weekends</string>
+
+    <!-- Detail -->
+    <string name="routines_edit">Edit routine</string>
+    <string name="routines_pause">Pause</string>
+    <string name="routines_resume">Resume</string>
+    <string name="routines_paused_notice">Paused. It stays out of Today and sends no reminders until you resume it.</string>
+    <string name="routines_not_today_notice">Not scheduled for today. Steps you tick still count.</string>
+    <string name="routines_reset_today">Reset today</string>
+    <string name="routines_reset_done">Today’s ticks cleared</string>
+    <string name="routines_steps_today">Today’s steps</string>
+    <string name="routines_no_steps_hint">Add steps in the editor to start checking them off.</string>
+    <string name="routines_history">History</string>
+    <string name="routines_streak_current">current streak</string>
+    <string name="routines_streak_best">best streak</string>
+    <string name="routines_rate_label">last 4 weeks</string>
+    <string name="routines_streak_help">A streak counts the scheduled days in a row where every step was done. Days off do not break it, and today counts once it is finished.</string>
+    <string name="routines_legend_done">Done</string>
+    <string name="routines_legend_partial">Part done</string>
+    <string name="routines_legend_missed">Missed</string>
+    <string name="routines_day_done">all steps done</string>
+    <plurals name="routines_day_partial">
+        <item quantity="one">%1$d of %2$d step done</item>
+        <item quantity="other">%1$d of %2$d steps done</item>
+    </plurals>
+    <string name="routines_day_missed">missed</string>
+    <string name="routines_day_not_scheduled">not scheduled</string>
+    <string name="routines_delete_title">Delete this routine?</string>
+    <string name="routines_delete_message">“%1$s”, its steps and its history will be removed. This cannot be undone.</string>
+
+    <!-- Editor -->
+    <string name="routines_create">Create routine</string>
+    <string name="routines_name">Name</string>
+    <string name="routines_name_hint">e.g. Morning start</string>
+    <string name="routines_name_required">Give the routine a name</string>
+    <string name="routines_steps">Steps</string>
+    <string name="routines_steps_required">Add at least one step</string>
+    <string name="routines_add_step">Add a step</string>
+    <string name="routines_step_blank">Empty steps are left out</string>
+    <string name="routines_step_up">Move “%1$s” up</string>
+    <string name="routines_step_down">Move “%1$s” down</string>
+    <string name="routines_step_delete">Remove “%1$s”</string>
+    <string name="routines_days">Days</string>
+    <string name="routines_days_required">Pick at least one day</string>
+    <string name="routines_time">Reminder</string>
+    <string name="routines_no_time">No reminder</string>
+    <string name="routines_time_help_off">Tap to choose a time. Taskfern will send a gentle reminder to start the routine on its days.</string>
+    <string name="routines_time_help_on">A reminder is sent at this time on the days above.</string>
+    <string name="routines_remove_time">Remove reminder</string>
+    <string name="routines_notifications_off">Notifications are off for Taskfern, so the reminder cannot appear.</string>
+    <string name="routines_allow">Allow</string>
+    <string name="routines_icon">Icon</string>
+    <string name="routines_custom_emoji">Or type any emoji</string>
+    <string name="routines_discard_title">Discard changes?</string>
+    <string name="routines_discard_message">Your changes to this routine have not been saved.</string>
+    <string name="routines_discard">Discard</string>
+    <string name="routines_keep_editing">Keep editing</string>
+</resources>
