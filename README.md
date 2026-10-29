@@ -77,6 +77,15 @@ All screenshots are real captures from a Google Pixel 6 running Android 17, usin
 | <img src="docs/screenshots/07-shopping-list.png" width="200" alt="Shopping list"> | <img src="docs/screenshots/09-routines.png" width="200" alt="Routines"> | <img src="docs/screenshots/10-routine-detail.png" width="200" alt="Routine detail and streak"> | <img src="docs/screenshots/12-settings.png" width="200" alt="Settings"> |
 | **Dark** | **AMOLED black** | **Material You** | **Large text** |
 | <img src="docs/screenshots/14-today-dark.png" width="200" alt="Dark theme"> | <img src="docs/screenshots/16-today-amoled.png" width="200" alt="AMOLED black theme"> | <img src="docs/screenshots/18-today-material-you.png" width="200" alt="Material You dynamic colour"> | <img src="docs/screenshots/21-large-text.png" width="200" alt="Large font size"> |
+| **Settings (dark)** | **Calendar (dark)** | **Shopping (AMOLED)** | **Quick Add widget** |
+| <img src="docs/screenshots/13-settings-dark.png" width="200" alt="Settings in dark theme"> | <img src="docs/screenshots/15-calendar-dark.png" width="200" alt="Calendar in dark theme"> | <img src="docs/screenshots/17-shopping-amoled.png" width="200" alt="Shopping list in AMOLED black"> | <img src="docs/screenshots/widget-quick-add.png" width="120" alt="Quick Add widget"> |
+
+**Landscape** — a side navigation rail keeps the full height for content:
+
+<p align="center">
+  <img src="docs/screenshots/19-landscape-today.png" width="48%" alt="Today dashboard in landscape with navigation rail">
+  <img src="docs/screenshots/20-landscape-calendar.png" width="48%" alt="Calendar in landscape with navigation rail">
+</p>
 
 ## Today dashboard
 
@@ -84,12 +93,23 @@ The Today screen shows your day at a glance: what is left, what is overdue, rout
 reminders. Complete a task with one tap (or a swipe), undo from the snackbar, swipe left to delete, long-press to
 select several tasks and reschedule, re-prioritise, move or archive them together.
 
+<p align="center">
+  <img src="docs/screenshots/01-today.png" width="220" alt="Today dashboard">
+  <img src="docs/screenshots/11-quick-add.png" width="220" alt="Quick Add sheet with a recognised date">
+</p>
+
 ## To-do list management
 
 Create lists with colours and favourites, add notes, tags, priorities (none, low, medium, high) and checklists, pin
 what matters, duplicate tasks and archive what you want out of sight. Deleted tasks go to **Recently deleted** and can
 be restored until the trash is emptied (after 7, 30 or 90 days — your choice). Search covers titles, notes, tags and
 checklist steps.
+
+<p align="center">
+  <img src="docs/screenshots/02-tasks-overview.png" width="220" alt="Smart views and lists">
+  <img src="docs/screenshots/03-task-list.png" width="220" alt="A task list">
+  <img src="docs/screenshots/05-task-details.png" width="220" alt="Task details">
+</p>
 
 ## Reminders and recurring tasks
 
@@ -103,16 +123,31 @@ checklist steps.
   overdue repeating task never leaves it overdue, and a quick double tap on a widget or notification can never complete
   the next occurrence by accident.
 
+<p align="center">
+  <img src="docs/screenshots/06-recurring-task.png" width="220" alt="Repeat rule options">
+  <img src="docs/screenshots/04-upcoming.png" width="220" alt="Upcoming tasks grouped by day">
+</p>
+
 ## Shopping and groceries
 
 Type “2 kg rice” or “eggs x12” in the bar at the bottom and keep typing — the keyboard stays open. Items land in the
 right aisle, show quantities and optional prices, and move to “In the cart” with one tap. Taskfern remembers what you
 buy for suggestions and **Buy again**, warns about duplicates, clears the cart with undo and shares the list as text.
 
+<p align="center">
+  <img src="docs/screenshots/07-shopping-list.png" width="220" alt="Shopping list with aisles and prices">
+  <img src="docs/screenshots/17-shopping-amoled.png" width="220" alt="Shopping list in AMOLED black">
+</p>
+
 ## Daily routines
 
 Routines are reusable checklists — a morning start, an evening wind-down, a weekly reset. Choose the days, an optional
 reminder time, then tick steps off each day. History shows the last weeks and your streak of fully completed days.
+
+<p align="center">
+  <img src="docs/screenshots/09-routines.png" width="220" alt="Routines for today">
+  <img src="docs/screenshots/10-routine-detail.png" width="220" alt="Routine history and streak">
+</p>
 
 ## Interactive home-screen widgets
 
@@ -135,10 +170,22 @@ Month and week views with due-task dots and outlined dots for upcoming repeats, 
 move a task to another day, and a + button that adds a task on the selected date. Export open dated tasks as an
 `.ics` file to import into any calendar app.
 
+<p align="center">
+  <img src="docs/screenshots/08-calendar.png" width="220" alt="Month calendar">
+  <img src="docs/screenshots/15-calendar-dark.png" width="220" alt="Calendar in dark theme">
+</p>
+
 ## Material You themes
 
 Follow the system or force light or dark, turn on **AMOLED black** for OLED screens, use **Material You** colours from
 your wallpaper (Android 12+) or pick one of five accent palettes: Fern, Moss, Ocean, Dusk and Clay.
+
+<p align="center">
+  <img src="docs/screenshots/01-today.png" width="180" alt="Light theme">
+  <img src="docs/screenshots/14-today-dark.png" width="180" alt="Dark theme">
+  <img src="docs/screenshots/16-today-amoled.png" width="180" alt="AMOLED black">
+  <img src="docs/screenshots/18-today-material-you.png" width="180" alt="Material You colours">
+</p>
 
 ## Offline-first design
 
