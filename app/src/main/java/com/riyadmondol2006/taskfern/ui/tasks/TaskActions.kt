@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.R
+import com.riyadmondol2006.taskfern.data.db.SubtaskEntity
 import com.riyadmondol2006.taskfern.data.db.TaskListEntity
 import com.riyadmondol2006.taskfern.data.db.TaskRow
 import com.riyadmondol2006.taskfern.data.repo.CompletionUndo
@@ -43,9 +44,11 @@ import com.riyadmondol2006.taskfern.domain.Streak
 import com.riyadmondol2006.taskfern.ui.common.DatePickerSheet
 import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.LocalSnackbarHost
+import com.riyadmondol2006.taskfern.ui.common.SubtaskRowActions
 import com.riyadmondol2006.taskfern.ui.common.priorityColor
 import com.riyadmondol2006.taskfern.ui.common.priorityLabel
 import com.riyadmondol2006.taskfern.ui.common.showUndo
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -66,10 +69,10 @@ sealed interface TaskEvent {
 }
 
 /**
- * Shared behaviour of every screen that shows tasks: completing with undo, deleting to the trash with undo, and
- * multi-select bulk actions.
+ * Shared behaviour of every screen that shows tasks: completing with undo, deleting to the trash with undo,
+ * multi-select bulk actions, and ticking subtasks inside a row.
  */
-open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel() {
+open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel(), SubtaskRowActions {
     private val _events = MutableSharedFlow<TaskEvent>(extraBufferCapacity = 8)
     val events: SharedFlow<TaskEvent> = _events
 
@@ -108,6 +111,15 @@ open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel
             val undo = tasks.skipOccurrence(id) ?: return@launch
             _events.emit(TaskEvent.Skipped(undo, tasks.get(id)?.dueDate))
         }
+    }
+
+    // ---- Subtasks inside a row ----------------------------------------------------------------------------------------
+
+    override fun observeSubtasks(taskId: Long): Flow<List<SubtaskEntity>> = tasks.observeSubtasks(taskId)
+
+    /** Sets the opposite of what the row showed, so a fast double tap cannot flip it back. */
+    override fun toggleSubtask(subtask: SubtaskEntity) {
+        viewModelScope.launch { tasks.setSubtaskDone(subtask.id, !subtask.done) }
     }
 
     fun undoCompletion(undo: CompletionUndo) = viewModelScope.launch { tasks.undoCompletion(undo) }

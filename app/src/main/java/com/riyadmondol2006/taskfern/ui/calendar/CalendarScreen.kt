@@ -250,6 +250,7 @@ fun CalendarScreen(nav: AppNavigator) {
                     onSwipeComplete = { vm.toggle(row) },
                     onSwipeDelete = { vm.delete(listOf(row.task.id)) },
                     streak = streaks[row.task.id]?.current ?: 0,
+                    subtasks = vm,
                 )
             }
             items(state.dayProjections, key = { "p${it.task.id}-${it.date}" }) { p ->

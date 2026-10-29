@@ -28,10 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.Notes
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
@@ -40,8 +38,6 @@ import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Repeat
@@ -50,7 +46,6 @@ import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Unarchive
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -76,7 +71,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -94,7 +88,6 @@ import com.riyadmondol2006.taskfern.TaskfernApp
 import com.riyadmondol2006.taskfern.data.db.DueScope
 import com.riyadmondol2006.taskfern.data.db.OccurrenceAction
 import com.riyadmondol2006.taskfern.domain.PlanPeriods
-import com.riyadmondol2006.taskfern.data.db.SubtaskEntity
 import com.riyadmondol2006.taskfern.ui.common.DatePickerSheet
 import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.LocalSnackbarHost
@@ -261,6 +254,9 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
                     minLines = 1,
                 )
             }
+
+            // Subtasks: part of the task itself, so they come right after its title and notes.
+            SubtasksSection(subtasks, taskOpen = task != null && !completed && !inTrash, vm = vm)
             HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
 
             // Date & time
@@ -443,12 +439,6 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
             FieldRow(Icons.AutoMirrored.Outlined.Label) {
                 TagEditor(draft.tags, allTags) { tags -> vm.edit { it.copy(tags = tags) } }
             }
-            HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
-
-            // Checklist
-            FieldRow(Icons.Outlined.Checklist) {
-                Checklist(subtasks, vm)
-            }
 
             // History
             if (task != null) {
@@ -562,7 +552,7 @@ private fun HabitStreak(streak: com.riyadmondol2006.taskfern.domain.Streak, log:
 }
 
 @Composable
-private fun transparentFieldColors() = TextFieldDefaults.colors(
+internal fun transparentFieldColors() = TextFieldDefaults.colors(
     focusedContainerColor = Color.Transparent,
     unfocusedContainerColor = Color.Transparent,
     errorContainerColor = Color.Transparent,
@@ -572,7 +562,7 @@ private fun transparentFieldColors() = TextFieldDefaults.colors(
 )
 
 @Composable
-private fun FieldRow(icon: ImageVector, tint: Color? = null, content: @Composable () -> Unit) {
+internal fun FieldRow(icon: ImageVector, tint: Color? = null, content: @Composable () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.Top) {
         Icon(icon, null, tint = tint ?: MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 14.dp).size(22.dp))
         Spacer(Modifier.width(16.dp))
@@ -633,60 +623,6 @@ private fun TagEditor(tags: List<String>, allTags: List<String>, onChange: (List
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 suggestions.forEach { s -> AssistChip(onClick = { onChange(tags + s); input = "" }, label = { Text("#$s") }) }
             }
-        }
-    }
-}
-
-@Composable
-private fun Checklist(subtasks: List<SubtaskEntity>, vm: TaskEditorViewModel) {
-    var input by rememberSaveable { mutableStateOf("") }
-    Column {
-        if (subtasks.isNotEmpty()) {
-            Text(
-                stringResource(R.string.editor_checklist_progress, subtasks.count { it.done }, subtasks.size),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
-            )
-        }
-        subtasks.forEachIndexed { index, s ->
-            var editing by remember(s.id) { mutableStateOf(s.title) }
-            var hadFocus by remember(s.id) { mutableStateOf(false) }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = s.done, onCheckedChange = { vm.toggleSubtask(s) })
-                TextField(
-                    value = editing,
-                    onValueChange = { editing = it.replace("\n", " ") },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(textDecoration = if (s.done) TextDecoration.LineThrough else null),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { vm.renameSubtask(s, editing) }),
-                    colors = transparentFieldColors(),
-                    modifier = Modifier.weight(1f).onFocusChanged { f ->
-                        // Save a renamed step when focus leaves it.
-                        if (f.isFocused) hadFocus = true
-                        else if (hadFocus) {
-                            hadFocus = false
-                            if (editing != s.title) vm.renameSubtask(s, editing)
-                        }
-                    },
-                )
-                if (index > 0) IconButton(onClick = { vm.moveSubtask(s, -1) }) { Icon(Icons.Outlined.KeyboardArrowUp, stringResource(R.string.tasks_move_up)) }
-                if (index < subtasks.lastIndex) IconButton(onClick = { vm.moveSubtask(s, 1) }) { Icon(Icons.Outlined.KeyboardArrowDown, stringResource(R.string.tasks_move_down)) }
-                IconButton(onClick = { vm.deleteSubtask(s) }) { Icon(Icons.Outlined.Close, stringResource(R.string.editor_remove_step, s.title)) }
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.Add, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 12.dp))
-            TextField(
-                value = input,
-                onValueChange = { input = it.replace("\n", " ") },
-                placeholder = { Text(stringResource(R.string.editor_add_step)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { if (input.isNotBlank()) { vm.addSubtask(input); input = "" } }),
-                colors = transparentFieldColors(),
-                modifier = Modifier.weight(1f),
-            )
         }
     }
 }

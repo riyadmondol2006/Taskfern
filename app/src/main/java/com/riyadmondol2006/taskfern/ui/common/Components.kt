@@ -2,6 +2,7 @@ package com.riyadmondol2006.taskfern.ui.common
 
 import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
@@ -51,7 +52,10 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -178,7 +182,8 @@ private fun MetaChip(icon: androidx.compose.ui.graphics.vector.ImageVector?, tex
 
 /**
  * A task row. Tap opens it, the circle completes it, long-press selects. Swiping right completes; swiping left
- * deletes (both undoable from the snackbar).
+ * deletes (both undoable from the snackbar). With [subtasks], the "1/3" count is a chip that opens the row to show
+ * its subtasks, which can be ticked right there; the row remembers being open while it scrolls away and back.
  */
 @Composable
 fun TaskItem(
@@ -195,6 +200,8 @@ fun TaskItem(
     onSwipeDelete: (() -> Unit)? = null,
     /** Completed occurrences in a row for a repeating task; shown from 2 up. */
     streak: Int = 0,
+    /** Shows and ticks the row's subtasks inline; null leaves a plain "1/3" count. */
+    subtasks: SubtaskRowActions? = null,
 ) {
     val t = row.task
     val context = LocalContext.current
@@ -203,6 +210,8 @@ fun TaskItem(
     val overdue = !t.isCompleted && t.dueDate != null && (t.dueDate.isBefore(today) ||
         (!t.isPlan && t.dueDate == today && t.dueTime != null && t.dueTime.isBefore(LocalTime.now())))
     val paused = t.recurrence?.paused == true
+    var subtasksOpen by rememberSaveable(t.id) { mutableStateOf(false) }
+    val canExpand = subtasks != null && row.subtaskTotal > 0 && !selectionMode
 
     val content: @Composable () -> Unit = {
         Surface(
@@ -213,64 +222,74 @@ fun TaskItem(
                 .clip(MaterialTheme.shapes.medium)
                 .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         ) {
-            Row(
-                Modifier.padding(start = 4.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TaskCheckbox(
-                    checked = t.isCompleted || selected,
-                    onToggle = if (selectionMode) onClick else onToggle,
-                    priority = t.priority,
-                    contentDescription = t.title,
-                )
-                Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
-                    Text(
-                        t.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (t.priority == Priority.HIGH && !t.isCompleted) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (t.isCompleted) muted else MaterialTheme.colorScheme.onSurface,
-                        textDecoration = if (t.isCompleted) TextDecoration.LineThrough else null,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+            Column {
+                Row(
+                    Modifier.padding(start = 4.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TaskCheckbox(
+                        checked = t.isCompleted || selected,
+                        onToggle = if (selectionMode) onClick else onToggle,
+                        priority = t.priority,
+                        contentDescription = t.title,
                     )
-                    val hasMeta = t.dueDate != null || t.isRecurring || row.subtaskTotal > 0 || row.reminderCount > 0 ||
-                        (showList && row.listName != null) || t.notes.isNotBlank() || t.tags.isNotEmpty()
-                    if (hasMeta) {
-                        Spacer(Modifier.height(3.dp))
-                        androidx.compose.foundation.layout.FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                        ) {
-                            if (t.dueDate != null) {
-                                val label = if (t.isCompleted && t.completedAt != null) {
-                                    Formatters.relativeDay(context, Instant.ofEpochMilli(t.completedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), today)
-                                } else Formatters.taskDueLabel(context, t.dueScope, t.dueDate, t.dueTime, today)
-                                MetaChip(
-                                    if (t.isPlan) Icons.Outlined.DateRange else Icons.Outlined.Event, label,
-                                    if (overdue) c.overdue else muted,
-                                )
-                            }
-                            if (paused) MetaChip(Icons.Outlined.PauseCircle, stringResource(R.string.paused), muted)
-                            else if (t.isRecurring) MetaChip(Icons.Outlined.Repeat, null, muted)
-                            if (streak >= 2 && !t.isCompleted) StreakChip(streak)
-                            if (row.reminderCount > 0 && !t.isCompleted) MetaChip(Icons.Outlined.Alarm, null, muted)
-                            if (row.subtaskTotal > 0) MetaChip(Icons.Outlined.Checklist, "${row.subtaskDone}/${row.subtaskTotal}", muted)
-                            if (t.notes.isNotBlank()) MetaChip(Icons.AutoMirrored.Outlined.Notes, null, muted)
-                            if (showList && row.listName != null) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(Modifier.size(8.dp).clip(CircleShape).background(listColor(row.listColor)))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(row.listName, style = MaterialTheme.typography.labelMedium, color = muted, maxLines = 1)
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                        Text(
+                            t.title,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (t.priority == Priority.HIGH && !t.isCompleted) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (t.isCompleted) muted else MaterialTheme.colorScheme.onSurface,
+                            textDecoration = if (t.isCompleted) TextDecoration.LineThrough else null,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        val hasMeta = t.dueDate != null || t.isRecurring || row.subtaskTotal > 0 || row.reminderCount > 0 ||
+                            (showList && row.listName != null) || t.notes.isNotBlank() || t.tags.isNotEmpty()
+                        if (hasMeta) {
+                            Spacer(Modifier.height(3.dp))
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                                itemVerticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (t.dueDate != null) {
+                                    val label = if (t.isCompleted && t.completedAt != null) {
+                                        Formatters.relativeDay(context, Instant.ofEpochMilli(t.completedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), today)
+                                    } else Formatters.taskDueLabel(context, t.dueScope, t.dueDate, t.dueTime, today)
+                                    MetaChip(
+                                        if (t.isPlan) Icons.Outlined.DateRange else Icons.Outlined.Event, label,
+                                        if (overdue) c.overdue else muted,
+                                    )
                                 }
-                            }
-                            t.tagList.take(3).forEach { tag ->
-                                Text("#$tag", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, maxLines = 1)
+                                if (paused) MetaChip(Icons.Outlined.PauseCircle, stringResource(R.string.paused), muted)
+                                else if (t.isRecurring) MetaChip(Icons.Outlined.Repeat, null, muted)
+                                if (streak >= 2 && !t.isCompleted) StreakChip(streak)
+                                if (row.reminderCount > 0 && !t.isCompleted) MetaChip(Icons.Outlined.Alarm, null, muted)
+                                if (canExpand) {
+                                    SubtaskChip(row.subtaskDone, row.subtaskTotal, subtasksOpen) { subtasksOpen = !subtasksOpen }
+                                } else if (row.subtaskTotal > 0) {
+                                    MetaChip(Icons.Outlined.Checklist, "${row.subtaskDone}/${row.subtaskTotal}", muted)
+                                }
+                                if (t.notes.isNotBlank()) MetaChip(Icons.AutoMirrored.Outlined.Notes, null, muted)
+                                if (showList && row.listName != null) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(Modifier.size(8.dp).clip(CircleShape).background(listColor(row.listColor)))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(row.listName, style = MaterialTheme.typography.labelMedium, color = muted, maxLines = 1)
+                                    }
+                                }
+                                t.tagList.take(3).forEach { tag ->
+                                    Text("#$tag", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, maxLines = 1)
+                                }
                             }
                         }
                     }
+                    if (t.pinned) {
+                        Icon(Icons.Outlined.PushPin, stringResource(R.string.pinned), tint = muted, modifier = Modifier.size(18.dp))
+                    }
                 }
-                if (t.pinned) {
-                    Icon(Icons.Outlined.PushPin, stringResource(R.string.pinned), tint = muted, modifier = Modifier.size(18.dp))
+                if (subtasks != null) {
+                    AnimatedVisibility(canExpand && subtasksOpen) { InlineSubtasks(t.id, subtasks) }
                 }
             }
         }

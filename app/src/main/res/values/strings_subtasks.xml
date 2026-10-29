@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Editor -->
+    <string name="subtasks_title">Subtasks</string>
+    <string name="subtasks_progress">Subtasks · %1$d of %2$d</string>
+    <string name="subtasks_add_hint">Add subtask</string>
+    <string name="subtasks_delete">Delete subtask %1$s</string>
+    <string name="subtasks_reorder">Move subtask %1$s</string>
+    <string name="subtasks_deleted">Subtask deleted</string>
+    <string name="subtasks_all_done">All subtasks done — complete the task?</string>
+    <string name="subtasks_complete_task">Complete</string>
+
+    <!-- Task rows -->
+    <string name="subtasks_hide">Hide subtasks</string>
+    <plurals name="subtasks_done_of">
+        <item quantity="one">%1$d of %2$d done</item>
+        <item quantity="other">%1$d of %2$d done</item>
+    </plurals>
+    <plurals name="subtasks_show">
+        <item quantity="one">Show %d subtask</item>
+        <item quantity="other">Show %d subtasks</item>
+    </plurals>
+</resources>
