@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -280,6 +279,9 @@ private fun weekdayHeaders(monday: Boolean): List<DayOfWeek> {
 private fun MonthGrid(state: CalendarState, onSelect: (LocalDate) -> Unit) {
     val (first, _) = CalendarViewModel.gridRange(state.month, state.weekStartsMonday)
     val today = LocalDate.now()
+    // Square cells on phones; capped height on wide screens so the whole month stays visible.
+    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val cellHeight = (maxWidth / 7).coerceAtMost(56.dp)
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             weekdayHeaders(state.weekStartsMonday).forEach { d ->
@@ -301,12 +303,13 @@ private fun MonthGrid(state: CalendarState, onSelect: (LocalDate) -> Unit) {
                         isToday = date == today,
                         selected = date == state.selected,
                         marks = state.marks[date],
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).height(cellHeight),
                         onClick = { onSelect(date) },
                     )
                 }
             }
         }
+    }
     }
 }
 
@@ -351,7 +354,7 @@ private fun DayCell(
     }
     Box(
         modifier
-            .then(if (tall) Modifier.heightIn(min = 60.dp) else Modifier.aspectRatio(1f))
+            .then(if (tall) Modifier.heightIn(min = 60.dp) else Modifier)
             .padding(2.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(if (selected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent)

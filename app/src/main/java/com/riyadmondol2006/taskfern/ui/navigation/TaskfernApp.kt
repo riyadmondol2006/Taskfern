@@ -35,7 +35,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -170,12 +175,11 @@ fun TaskfernAppRoot(pendingDeepLink: Uri?, onDeepLinkHandled: () -> Unit) {
                     )
                 }
             },
-            layoutType = if (isTopLevel || destination == null) {
-                androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
-                    androidx.compose.material3.adaptive.currentWindowAdaptiveInfo(),
-                )
-            } else {
-                androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType.None
+            layoutType = when {
+                !isTopLevel && destination != null -> NavigationSuiteType.None
+                // Landscape phones and tablets: a side rail keeps the full height for content.
+                LocalConfiguration.current.screenWidthDp >= 600 -> NavigationSuiteType.NavigationRail
+                else -> NavigationSuiteType.NavigationBar
             },
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
@@ -184,8 +188,11 @@ fun TaskfernAppRoot(pendingDeepLink: Uri?, onDeepLinkHandled: () -> Unit) {
                 contentWindowInsets = WindowInsets(0),
                 containerColor = MaterialTheme.colorScheme.surface,
             ) { padding ->
-                Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
-                    TaskfernNavHost(nav, navigator)
+                // On wide screens content is centred at a comfortable reading width instead of stretching edge to edge.
+                Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding), contentAlignment = Alignment.TopCenter) {
+                    Box(Modifier.widthIn(max = 840.dp).fillMaxSize()) {
+                        TaskfernNavHost(nav, navigator)
+                    }
                 }
             }
         }

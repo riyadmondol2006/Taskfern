@@ -17,24 +17,33 @@ All code lives in `com.riyadmondol2006.taskfern.widget` (config activities in `w
 ## Supported sizes
 
 Sizes are in dp. "Cells" are the usual launcher grid cells (`70 × n − 30` dp on older launchers). Every widget uses
-`SizeMode.Responsive`, so the launcher receives one layout per breakpoint and switches between them while resizing
-without waking the app. The layout picked inside a breakpoint is decided by `LocalSize`.
+`SizeMode.Exact`: the layout sees the widget's real size, so lists show exactly as many rows as fit, and Glance lays
+the widget out again when the user resizes it. (Responsive mode was tried first; it reports the nearest smaller
+breakpoint, which left visibly empty space on a Pixel 6.) The layout is chosen from `LocalSize`.
 
-| Widget | Default (target cells) | Min resize | Responsive breakpoints | Layouts |
-| --- | --- | --- | --- | --- |
-| Today | 4 × 3 (250 × 180) | 2 × 2 (110 × 110) | 120×100, 220×100, 160×150, 250×150, 250×260, 320×340 | compact (< 140 tall or < 150 wide), medium, large (≥ 260 tall) |
-| Quick Add | 1 × 1 (40 × 40) | 1 × 1 | 48×48, 110×48 | round button (< 100 wide), labelled pill |
-| Shopping | 3 × 3 (180 × 180) | 2 × 2 (110 × 110) | 110×110, 180×180, 250×250 | compact (< 150 tall), list |
-| Agenda | 4 × 3 (250 × 180) | 3 × 2 (180 × 110) | 180×110, 250×180, 250×300 | list (header shrinks when short) |
-| Routine | 3 × 3 (180 × 180) | 2 × 2 (110 × 110) | 110×110, 180×180, 250×250 | compact (< 150 tall), checklist |
+| Widget | Default (target cells) | Min resize | Layouts by size |
+| --- | --- | --- | --- |
+| Today | 4 × 3 (250 × 180) | 2 × 2 (110 × 110) | compact (< 140 tall or < 150 wide), medium, large (≥ 260 tall) |
+| Quick Add | 1 × 1 (40 × 40) | 1 × 1 | round button (< 100 wide), labelled pill |
+| Shopping | 3 × 3 (180 × 180) | 2 × 2 (110 × 110) | compact (< 150 tall), list |
+| Agenda | 4 × 3 (250 × 180) | 3 × 2 (180 × 110) | list (header shrinks when short) |
+| Routine | 3 × 3 (180 × 180) | 2 × 2 (110 × 110) | compact (< 150 tall), checklist |
+
+### Rows with check-off buttons are plain views
+
+Today, Shopping and Routine draw their rows as plain views (as many as fit, then "N more · open Taskfern"), not as a
+scrolling RemoteViews collection. In a collection, Glance can only deliver an action through an invisible activity
+"trampoline", so every check-off made the launcher play an app-open transition. Plain views send the check-off as a
+direct broadcast: no transition, faster, and nothing else is launched. Rows therefore only check things off; the header,
+"Open Today" and the add buttons open the app. The Agenda's rows only open tasks, so it keeps a scrolling list.
 
 ### What each layout shows
 
 **Today's tasks** — overdue tasks plus tasks due today that are open and not paused (the same query as the Today screen).
 
 * Compact: date, number of tasks left, overdue count, progress bar and a Quick Add button.
-* Medium: header (title, date, counts, Quick Add), progress bar, scrollable task list; each task has a check-off button
-  and opens the task when tapped.
+* Medium: header (title, date, counts, Quick Add), progress bar and the tasks that fit, each with a check-off button;
+  tapping the header opens Today.
 * Large: medium plus due times, overdue marking with the original due day, list name, priority flags and an
   "Open Today" button.
 * Progress = completed today ÷ (completed today + remaining). "Completed today" counts every task completed since local
@@ -140,8 +149,11 @@ Stored in the `widget_configs` table (`WidgetConfigEntity`, key = app widget id,
 
 ## Platform constraints
 
+* **Release builds and R8.** Glance finds the widget ids to update by the `GlanceAppWidget` class name. R8 merged the
+  five similar widget classes into one, so updating one kind redrew the others with the wrong content (seen on the
+  device). `proguard-rules.pro` keeps every `GlanceAppWidget` and `GlanceAppWidgetReceiver` class.
 * **RemoteViews only.** Widgets cannot host arbitrary views, animations or custom drawing. Glance maps composables to
-  a fixed set of RemoteViews layouts; lists are RemoteViews collections (scrollable, but not reorderable).
+  a fixed set of RemoteViews layouts. Collections (scrolling lists) are only used where rows open the app (Agenda).
 * **No inline text entry.** App widgets cannot show an editable text field or open the keyboard. Quick Add and the
   shopping "add" button open the app (the Quick Add sheet or the list) instead of pretending to accept text.
 * **Corner radius and colours before Android 12.** Rounded corners use a tinted shape drawable; check boxes are
