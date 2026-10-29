@@ -3,6 +3,7 @@ package com.riyadmondol2006.taskfern.ui.editor
 import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.riyadmondol2006.taskfern.data.db.DueScope
 import com.riyadmondol2006.taskfern.data.db.OccurrenceLogEntity
 import com.riyadmondol2006.taskfern.data.db.SubtaskEntity
 import com.riyadmondol2006.taskfern.data.db.TaskEntity
@@ -44,10 +45,11 @@ data class EditorDraft(
     val pinned: Boolean = false,
     val recurrence: RecurrenceRule? = null,
     val reminders: List<Int> = emptyList(),
+    val dueScope: Int = DueScope.DAY,
 ) {
     fun toTaskDraft() = TaskDraft(
         title = title, notes = notes, listId = listId, priority = priority, dueDate = dueDate, dueTime = dueTime,
-        tags = tags, pinned = pinned, recurrence = recurrence, reminderOffsets = reminders,
+        tags = tags, pinned = pinned, recurrence = recurrence, reminderOffsets = reminders, dueScope = dueScope,
     )
 }
 
@@ -103,6 +105,7 @@ class TaskEditorViewModel(
                 title = t.title, notes = t.notes, listId = t.listId, priority = t.priority, dueDate = t.dueDate,
                 dueTime = t.dueTime, tags = t.tagList, pinned = t.pinned, recurrence = t.recurrence,
                 reminders = details.reminders.map { it.offsetMinutes }.sorted(),
+                dueScope = t.dueScope,
             )
             saved = d
             _draft.value = d
@@ -112,7 +115,13 @@ class TaskEditorViewModel(
 
     fun edit(change: (EditorDraft) -> EditorDraft) = _draft.update(change)
 
-    fun setDueDate(date: LocalDate?) = _draft.update { d ->
+    /** Plans the task for the week, month or year ending on [end]: no time, no repeat. */
+    fun setPlan(scope: Int, end: LocalDate) = _draft.update { d ->
+        d.copy(dueScope = scope, dueDate = end, dueTime = null, recurrence = null)
+    }
+
+    fun setDueDate(date: LocalDate?) = _draft.update { d0 ->
+        val d = d0.copy(dueScope = DueScope.DAY)
         when {
             date == null && d.recurrence != null -> d // a repeating task needs a date; the UI disables "No date"
             date == null -> d.copy(dueDate = null, dueTime = null, reminders = emptyList())

@@ -90,6 +90,8 @@ data class BackupTask(
     val recurrence: BackupRecurrence? = null,
     val seriesAnchor: String? = null,
     val occurrenceCount: Int = 0,
+    /** "day" (default, may be omitted), or "week" / "month" / "year" for a plan ending on dueDate. Added in app schema 2. */
+    val dueScope: String? = null,
     /** For a completed occurrence of a recurring task: the id of the series it came from. */
     val sourceTaskId: Long? = null,
     val snoozeUntil: Long? = null,

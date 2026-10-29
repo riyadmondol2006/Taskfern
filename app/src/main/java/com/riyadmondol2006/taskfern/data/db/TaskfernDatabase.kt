@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * The single on-device database.
@@ -44,11 +45,18 @@ abstract class TaskfernDatabase : RoomDatabase() {
     abstract fun widgetConfigDao(): WidgetConfigDao
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
         const val NAME = "taskfern.db"
 
+        /** 1 → 2: tasks can be planned for a week, month or year (`due_scope`, 0 = a single day). */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tasks ADD COLUMN due_scope INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         /** Every migration ever shipped, oldest first. */
-        val MIGRATIONS: Array<Migration> = emptyArray()
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
 
         fun build(context: Context, inMemory: Boolean = false): TaskfernDatabase {
             val builder = if (inMemory) {

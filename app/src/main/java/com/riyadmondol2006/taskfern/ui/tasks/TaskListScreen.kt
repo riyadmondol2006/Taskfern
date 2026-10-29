@@ -87,6 +87,7 @@ import java.time.ZoneId
 /** What a section of the list is about; the UI turns it into a label. */
 sealed interface SectionKey {
     data class Day(val date: LocalDate?) : SectionKey
+    data class Plan(val scope: Int, val end: LocalDate) : SectionKey
     data class Bucket(val bucket: TaskFilters.Bucket) : SectionKey
 }
 
@@ -144,6 +145,8 @@ class TaskListViewModel(
                 )
                 val sorted = TaskFilters.sort(filtered, sort)
                 when {
+                    view == SmartViewKey.PLANS ->
+                        filtered.groupBy { SectionKey.Plan(it.task.dueScope, it.task.dueDate!!) }.toList()
                     view == SmartViewKey.UPCOMING || view == SmartViewKey.THIS_WEEK ->
                         TaskFilters.groupByDay(sorted).map { (d, r) -> SectionKey.Day(d) to r }
                     sort == TaskSort.SMART && view in setOf(SmartViewKey.LIST, SmartViewKey.INBOX, SmartViewKey.ALL, SmartViewKey.IMPORTANT) ||
@@ -380,6 +383,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
 @Composable
 private fun sectionLabel(key: SectionKey): String = when (key) {
     is SectionKey.Day -> key.date?.let { Formatters.relativeDay(LocalContext.current, it) } ?: stringResource(R.string.no_date)
+    is SectionKey.Plan -> Formatters.planLabel(LocalContext.current, key.scope, key.end)
     is SectionKey.Bucket -> stringResource(
         when (key.bucket) {
             TaskFilters.Bucket.OVERDUE -> R.string.overdue

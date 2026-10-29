@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.CalendarViewMonth
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Delete
@@ -108,6 +109,7 @@ val smartViews = listOf(
     SmartViewInfo(SmartViewKey.TOMORROW, R.string.view_tomorrow, Icons.Outlined.WbTwilight),
     SmartViewInfo(SmartViewKey.THIS_WEEK, R.string.view_this_week, Icons.Outlined.DateRange),
     SmartViewInfo(SmartViewKey.UPCOMING, R.string.view_upcoming, Icons.Outlined.Upcoming),
+    SmartViewInfo(SmartViewKey.PLANS, R.string.view_plans, Icons.Outlined.CalendarViewMonth),
     SmartViewInfo(SmartViewKey.OVERDUE, R.string.view_overdue, Icons.Outlined.WarningAmber),
     SmartViewInfo(SmartViewKey.IMPORTANT, R.string.view_important, Icons.Outlined.Flag),
     SmartViewInfo(SmartViewKey.NO_DATE, R.string.view_no_date, Icons.Outlined.EventBusy),

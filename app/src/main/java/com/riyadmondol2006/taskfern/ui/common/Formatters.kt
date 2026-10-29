@@ -1,6 +1,7 @@
 package com.riyadmondol2006.taskfern.ui.common
 
 import com.riyadmondol2006.taskfern.domain.LogicalDay
+import com.riyadmondol2006.taskfern.domain.PlanPeriods
 import android.content.Context
 import android.text.format.DateFormat
 import com.riyadmondol2006.taskfern.R
@@ -60,6 +61,35 @@ object Formatters {
         val day = relativeDay(context, date, today)
         return if (time == null) day else "$day ${time(context, time)}"
     }
+
+    /** "This week", "Next month", "Week of 3 Nov", "November 2027", "2028" for a plan whose period ends on [end]. */
+    fun planLabel(context: Context, scope: Int, end: LocalDate, today: LocalDate = LogicalDay.today()): String {
+        val l = PlanPeriods.label(scope, end, today)
+        return when (scope) {
+            com.riyadmondol2006.taskfern.data.db.DueScope.WEEK -> when (l.relative) {
+                PlanPeriods.Relative.THIS -> context.getString(R.string.plan_this_week)
+                PlanPeriods.Relative.NEXT -> context.getString(R.string.plan_next_week)
+                PlanPeriods.Relative.OTHER -> context.getString(R.string.plan_week_of, shortDate(l.start, today))
+            }
+            com.riyadmondol2006.taskfern.data.db.DueScope.MONTH -> when (l.relative) {
+                PlanPeriods.Relative.THIS -> context.getString(R.string.plan_this_month)
+                PlanPeriods.Relative.NEXT -> context.getString(R.string.plan_next_month)
+                PlanPeriods.Relative.OTHER -> {
+                    val skeleton = if (end.year == today.year) "MMMM" else "MMMM yyyy"
+                    end.format(DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(Locale.getDefault(), skeleton), Locale.getDefault()))
+                }
+            }
+            else -> when (l.relative) {
+                PlanPeriods.Relative.THIS -> context.getString(R.string.plan_this_year)
+                PlanPeriods.Relative.NEXT -> context.getString(R.string.plan_next_year)
+                PlanPeriods.Relative.OTHER -> end.year.toString()
+            }
+        }
+    }
+
+    /** Due label for a task: a plan's period, or the day and time. */
+    fun taskDueLabel(context: Context, scope: Int, date: LocalDate, time: LocalTime?, today: LocalDate = LogicalDay.today()): String =
+        if (scope != com.riyadmondol2006.taskfern.data.db.DueScope.DAY) planLabel(context, scope, date, today) else dueLabel(context, date, time, today)
 
     /** "10 min before", "1 hour before", "1 day before", "At due time". */
     fun reminderOffset(context: Context, minutes: Int): String = when {

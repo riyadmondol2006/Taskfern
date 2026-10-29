@@ -58,6 +58,8 @@ object BackupValidator {
             p.require(t.dueTime == null || t.dueDate != null, "$at: has a due time but no due date.")
             p.date(at, "seriesAnchor", t.seriesAnchor)
             p.require(t.occurrenceCount >= 0, "$at: occurrenceCount is negative.")
+            p.require(t.dueScope == null || t.dueScope in setOf("day", "week", "month", "year"), "$at: unknown dueScope '${t.dueScope}'.")
+            p.require(t.dueScope == null || t.dueScope == "day" || t.dueDate != null, "$at: a plan needs a dueDate.")
             p.require(t.createdAt >= 0 && t.updatedAt >= 0, "$at: timestamps must not be negative.")
             p.require(t.listId == null || t.listId in listIds, "$at: list ${t.listId} is not in the backup.")
             t.recurrence?.let { r ->

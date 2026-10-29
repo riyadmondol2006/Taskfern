@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.PauseCircle
@@ -200,7 +201,7 @@ fun TaskItem(
     val c = LocalTaskfernColors.current
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val overdue = !t.isCompleted && t.dueDate != null && (t.dueDate.isBefore(today) ||
-        (t.dueDate == today && t.dueTime != null && t.dueTime.isBefore(LocalTime.now())))
+        (!t.isPlan && t.dueDate == today && t.dueTime != null && t.dueTime.isBefore(LocalTime.now())))
     val paused = t.recurrence?.paused == true
 
     val content: @Composable () -> Unit = {
@@ -243,8 +244,11 @@ fun TaskItem(
                             if (t.dueDate != null) {
                                 val label = if (t.isCompleted && t.completedAt != null) {
                                     Formatters.relativeDay(context, Instant.ofEpochMilli(t.completedAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate(), today)
-                                } else Formatters.dueLabel(context, t.dueDate, t.dueTime, today)
-                                MetaChip(Icons.Outlined.Event, label, if (overdue) c.overdue else muted)
+                                } else Formatters.taskDueLabel(context, t.dueScope, t.dueDate, t.dueTime, today)
+                                MetaChip(
+                                    if (t.isPlan) Icons.Outlined.DateRange else Icons.Outlined.Event, label,
+                                    if (overdue) c.overdue else muted,
+                                )
                             }
                             if (paused) MetaChip(Icons.Outlined.PauseCircle, stringResource(R.string.paused), muted)
                             else if (t.isRecurring) MetaChip(Icons.Outlined.Repeat, null, muted)

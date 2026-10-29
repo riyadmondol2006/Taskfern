@@ -91,7 +91,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import com.riyadmondol2006.taskfern.R
 import com.riyadmondol2006.taskfern.TaskfernApp
+import com.riyadmondol2006.taskfern.data.db.DueScope
 import com.riyadmondol2006.taskfern.data.db.OccurrenceAction
+import com.riyadmondol2006.taskfern.domain.PlanPeriods
 import com.riyadmondol2006.taskfern.data.db.SubtaskEntity
 import com.riyadmondol2006.taskfern.ui.common.DatePickerSheet
 import com.riyadmondol2006.taskfern.ui.common.Formatters
@@ -265,12 +267,14 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
             FieldRow(Icons.Outlined.Event) {
                 Column {
                     val today = LogicalDay.today()
+                    val isPlan = draft.dueScope != DueScope.DAY && draft.dueDate != null
+                    val day = draft.dueDate.takeIf { !isPlan }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DateChip(stringResource(R.string.today), draft.dueDate == today) { vm.setDueDate(today) }
-                        DateChip(stringResource(R.string.tomorrow), draft.dueDate == today.plusDays(1)) { vm.setDueDate(today.plusDays(1)) }
+                        DateChip(stringResource(R.string.today), day == today) { vm.setDueDate(today) }
+                        DateChip(stringResource(R.string.tomorrow), day == today.plusDays(1)) { vm.setDueDate(today.plusDays(1)) }
                         val nextWeek = today.with(TemporalAdjusters.next(java.time.DayOfWeek.MONDAY))
-                        DateChip(stringResource(R.string.editor_next_week), draft.dueDate == nextWeek) { vm.setDueDate(nextWeek) }
-                        val other = draft.dueDate != null && draft.dueDate !in setOf(today, today.plusDays(1), nextWeek)
+                        DateChip(stringResource(R.string.editor_next_week), day == nextWeek) { vm.setDueDate(nextWeek) }
+                        val other = day != null && day !in setOf(today, today.plusDays(1), nextWeek)
                         FilterChip(
                             selected = other,
                             onClick = { showDate = true },
@@ -280,7 +284,48 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
                             AssistChip(onClick = { vm.setDueDate(null) }, label = { Text(stringResource(R.string.no_date)) })
                         }
                     }
-                    if (draft.dueDate != null) {
+                    // Plans: a week, month or year instead of one day (not for repeating tasks).
+                    if (draft.recurrence == null) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(stringResource(R.string.plan_for), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        var morePlans by remember { mutableStateOf(false) }
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(DueScope.WEEK to R.string.plan_this_week, DueScope.MONTH to R.string.plan_this_month, DueScope.YEAR to R.string.plan_this_year)
+                                .forEach { (scope, label) ->
+                                    val end = PlanPeriods.end(scope, today, 0, settings.weekStartsMonday)
+                                    DateChip(stringResource(label), isPlan && draft.dueScope == scope && draft.dueDate == end) { vm.setPlan(scope, end) }
+                                }
+                            val otherPlan = isPlan && draft.dueDate != PlanPeriods.end(draft.dueScope, today, 0, settings.weekStartsMonday)
+                            Column {
+                                FilterChip(
+                                    selected = otherPlan,
+                                    onClick = { morePlans = true },
+                                    label = {
+                                        Text(
+                                            if (otherPlan) Formatters.planLabel(context, draft.dueScope, draft.dueDate!!, today)
+                                            else stringResource(R.string.editor_plan_later),
+                                        )
+                                    },
+                                )
+                                DropdownMenu(morePlans, onDismissRequest = { morePlans = false }) {
+                                    listOf(DueScope.WEEK to R.string.plan_next_week, DueScope.MONTH to R.string.plan_next_month, DueScope.YEAR to R.string.plan_next_year)
+                                        .forEach { (scope, label) ->
+                                            DropdownMenuItem(text = { Text(stringResource(label)) }, onClick = {
+                                                morePlans = false
+                                                vm.setPlan(scope, PlanPeriods.end(scope, today, 1, settings.weekStartsMonday))
+                                            })
+                                        }
+                                }
+                            }
+                        }
+                        if (isPlan) {
+                            Text(
+                                stringResource(R.string.plan_for_explain),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (draft.dueDate != null && !isPlan) {
                         Spacer(Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.Schedule, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -346,7 +391,10 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
                             rule?.let { RecurrenceText.describe(context, it, task?.seriesAnchor ?: draft.dueDate) } ?: stringResource(R.string.repeat_none),
                             style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f),
                         )
-                        TextButton(onClick = { showRepeat = true }) { Text(stringResource(if (rule == null) R.string.editor_set_repeat else R.string.action_edit)) }
+                        TextButton(
+                            onClick = { showRepeat = true },
+                            enabled = draft.dueScope == DueScope.DAY || draft.dueDate == null,
+                        ) { Text(stringResource(if (rule == null) R.string.editor_set_repeat else R.string.action_edit)) }
                     }
                     if (rule != null && task?.isRecurring == true && !completed) {
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

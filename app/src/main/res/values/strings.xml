@@ -97,6 +97,18 @@
     <string name="paused">Paused</string>
     <string name="pinned">Pinned</string>
 
+    <!-- Plans: tasks for a week, month or year -->
+    <string name="view_plans">Plans</string>
+    <string name="plan_this_week">This week</string>
+    <string name="plan_next_week">Next week</string>
+    <string name="plan_week_of">Week of %1$s</string>
+    <string name="plan_this_month">This month</string>
+    <string name="plan_next_month">Next month</string>
+    <string name="plan_this_year">This year</string>
+    <string name="plan_next_year">Next year</string>
+    <string name="plan_for">Plan for</string>
+    <string name="plan_for_explain">No fixed day: do it any time in that week, month or year. It shows under Plans and becomes overdue only when the period ends.</string>
+
     <!-- Streaks -->
     <plurals name="streak_in_a_row">
         <item quantity="one">%d in a row</item>

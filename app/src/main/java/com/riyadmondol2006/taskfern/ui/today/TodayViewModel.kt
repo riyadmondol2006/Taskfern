@@ -42,11 +42,15 @@ data class TodayState(
     val completedToday: List<TaskRow> = emptyList(),
     val routines: List<RoutineSummary> = emptyList(),
     val showCompleted: Boolean = true,
+    /** Plans for the current week, month and year (not tied to one day). */
+    val plans: List<TaskRow> = emptyList(),
 ) {
     val remaining: Int get() = overdue.size + dueToday.size
     val routinesLeft: Int get() = routines.count { it.total > 0 && it.done < it.total }
     val hasReminders: Boolean get() = (overdue + dueToday).any { it.reminderCount > 0 } || upcomingReminders.isNotEmpty()
 }
+
+private data class TaskPart(val due: List<TaskRow>, val completed: List<TaskRow>, val open: List<TaskRow>, val plans: List<TaskRow>)
 
 class TodayViewModel(
     tasks: TaskRepository,
@@ -67,7 +71,11 @@ class TodayViewModel(
             tasks.observeDueOnOrBefore(today),
             tasks.observeCompletedSince(startOfDay),
             tasks.observeOpenRows(),
-        ) { due, completed, open -> Triple(due, completed, open) }
+            tasks.observePlans(today),
+        ) { due, completed, open, plans ->
+            val current = plans.filter { com.riyadmondol2006.taskfern.domain.PlanPeriods.isCurrent(it.task.dueScope, it.task.dueDate!!, today) }
+            TaskPart(due, completed, open, current)
+        }
     }
 
     private val routinePart = day.flatMapLatest { today ->
@@ -83,7 +91,7 @@ class TodayViewModel(
         }
     }
 
-    val state: StateFlow<TodayState> = combine(day, taskPart, routinePart, settings.settings) { today, (due, completed, open), rs, s: Settings ->
+    val state: StateFlow<TodayState> = combine(day, taskPart, routinePart, settings.settings) { today, (due, completed, open, plans), rs, s: Settings ->
         val sorted = TaskFilters.sort(due, TaskSort.SMART)
         val overdue = sorted.filter { it.task.dueDate!!.isBefore(today) }
         val dueToday = sorted.filter { it.task.dueDate == today }
@@ -96,7 +104,7 @@ class TodayViewModel(
             userName = s.userName,
             overdue = overdue,
             dueToday = dueToday,
-            important = open.filter { it.task.priority == Priority.HIGH && it.task.id !in shownIds && it.task.recurrence?.paused != true }
+            important = open.filter { it.task.priority == Priority.HIGH && it.task.id !in shownIds && !it.task.isPlan && it.task.recurrence?.paused != true }
                 .let { TaskFilters.sort(it, TaskSort.SMART) }.take(3),
             upcomingReminders = open.filter { r ->
                 r.task.id !in shownIds && r.task.nextReminderAt?.let { it in now..dayAhead } == true
@@ -104,6 +112,7 @@ class TodayViewModel(
             completedToday = completed,
             routines = rs,
             showCompleted = s.showCompletedToday,
+            plans = plans,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayState())
 

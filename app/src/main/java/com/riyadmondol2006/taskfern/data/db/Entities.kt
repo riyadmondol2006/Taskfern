@@ -22,6 +22,14 @@ data class TaskListEntity(
     @ColumnInfo(name = "created_at") val createdAt: Long,
 )
 
+/** What a task's due date means: a single day, or the last day of a week, month or year it is planned for. */
+object DueScope {
+    const val DAY = 0
+    const val WEEK = 1
+    const val MONTH = 2
+    const val YEAR = 3
+}
+
 object Priority {
     const val NONE = 0
     const val LOW = 1
@@ -77,8 +85,11 @@ data class TaskEntity(
     @ColumnInfo(name = "source_task_id") val sourceTaskId: Long? = null,
     @ColumnInfo(name = "snooze_until") val snoozeUntil: Long? = null,
     @ColumnInfo(name = "next_reminder_at") val nextReminderAt: Long? = null,
+    /** [DueScope]: DAY, or a plan for the week/month/year ending on [dueDate]. Added in schema version 2. */
+    @ColumnInfo(name = "due_scope", defaultValue = "0") val dueScope: Int = DueScope.DAY,
 ) {
     val tagList: List<String> get() = tagsFromColumn(tags)
+    val isPlan: Boolean get() = dueScope != DueScope.DAY && dueDate != null
     val isRecurring: Boolean get() = recurrence != null
 
     companion object {

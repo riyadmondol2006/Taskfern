@@ -16,6 +16,9 @@ object TaskFilters {
 
     private fun TaskRow.isPaused() = task.recurrence?.paused == true
 
+    /** Plans belong in day views only once their period is over (then they are simply overdue). */
+    private fun TaskRow.isDayTaskOn(today: LocalDate) = !task.isPlan || task.dueDate!!.isBefore(today)
+
     /** Last day of the current week given the user's week start. */
     fun endOfWeek(today: LocalDate, weekStartsMonday: Boolean): LocalDate {
         val last = if (weekStartsMonday) DayOfWeek.SUNDAY else DayOfWeek.SATURDAY
@@ -33,14 +36,22 @@ object TaskFilters {
     ): List<TaskRow> = when {
         view == SmartViewKey.LIST -> rows.filter { it.task.listId == listId }
         view == SmartViewKey.INBOX -> rows.filter { it.task.listId == null }
-        view == SmartViewKey.TODAY -> rows.filter { !it.isPaused() && it.task.dueDate?.let { d -> !d.isAfter(today) } == true }
-        view == SmartViewKey.TOMORROW -> rows.filter { !it.isPaused() && it.task.dueDate == today.plusDays(1) }
+        view == SmartViewKey.TODAY -> rows.filter {
+            !it.isPaused() && it.isDayTaskOn(today) && it.task.dueDate?.let { d -> !d.isAfter(today) } == true
+        }
+        view == SmartViewKey.TOMORROW -> rows.filter { !it.isPaused() && !it.task.isPlan && it.task.dueDate == today.plusDays(1) }
         view == SmartViewKey.THIS_WEEK -> {
             val end = endOfWeek(today, weekStartsMonday)
-            rows.filter { !it.isPaused() && it.task.dueDate?.let { d -> !d.isBefore(today) && !d.isAfter(end) } == true }
+            // Day tasks this week plus plans for this week (not month/year plans that happen to end this week).
+            rows.filter {
+                !it.isPaused() && (!it.task.isPlan || it.task.dueScope == com.riyadmondol2006.taskfern.data.db.DueScope.WEEK) &&
+                    it.task.dueDate?.let { d -> !d.isBefore(today) && !d.isAfter(end) } == true
+            }
         }
-        view == SmartViewKey.UPCOMING -> rows.filter { !it.isPaused() && it.task.dueDate?.isAfter(today) == true }
+        view == SmartViewKey.PLANS -> rows.filter { it.task.isPlan && !it.task.dueDate!!.isBefore(today) }
+            .sortedWith(compareBy({ it.task.dueDate }, { it.task.dueScope }, { -it.task.priority }))
         view == SmartViewKey.OVERDUE -> rows.filter { !it.isPaused() && it.task.dueDate?.isBefore(today) == true }
+        view == SmartViewKey.UPCOMING -> rows.filter { !it.isPaused() && !it.task.isPlan && it.task.dueDate?.isAfter(today) == true }
         view == SmartViewKey.IMPORTANT -> rows.filter { it.task.priority == Priority.HIGH }
         view == SmartViewKey.NO_DATE -> rows.filter { it.task.dueDate == null }
         view == SmartViewKey.RECENT -> rows.filter { it.task.createdAt >= recentSinceMillis }.sortedByDescending { it.task.createdAt }

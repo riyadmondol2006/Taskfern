@@ -123,6 +123,7 @@ object BackupMapper {
                         )
                     },
                     seriesAnchor = t.seriesAnchor?.let(::date), occurrenceCount = t.occurrenceCount,
+                    dueScope = scopeName(t.dueScope),
                     // The series row may have been deleted for good; the link is informational only.
                     sourceTaskId = t.sourceTaskId?.takeIf { it in taskIds }, snoozeUntil = t.snoozeUntil,
                 )
@@ -180,6 +181,7 @@ object BackupMapper {
                         )
                     },
                     seriesAnchor = t.seriesAnchor?.let(::parseDate), occurrenceCount = t.occurrenceCount,
+                    dueScope = scopeValue(t.dueScope),
                     sourceTaskId = t.sourceTaskId?.takeIf { it in taskIds }, snoozeUntil = t.snoozeUntil,
                     nextReminderAt = null,
                 )
@@ -258,4 +260,18 @@ object BackupMapper {
         focusMinutes = b.focusMinutes ?: current.focusMinutes,
         trashRetentionDays = b.trashRetentionDays ?: current.trashRetentionDays,
     )
+
+private fun scopeName(scope: Int): String? = when (scope) {
+    com.riyadmondol2006.taskfern.data.db.DueScope.WEEK -> "week"
+    com.riyadmondol2006.taskfern.data.db.DueScope.MONTH -> "month"
+    com.riyadmondol2006.taskfern.data.db.DueScope.YEAR -> "year"
+    else -> null
+}
+
+private fun scopeValue(name: String?): Int = when (name) {
+    "week" -> com.riyadmondol2006.taskfern.data.db.DueScope.WEEK
+    "month" -> com.riyadmondol2006.taskfern.data.db.DueScope.MONTH
+    "year" -> com.riyadmondol2006.taskfern.data.db.DueScope.YEAR
+    else -> com.riyadmondol2006.taskfern.data.db.DueScope.DAY
+}
 }

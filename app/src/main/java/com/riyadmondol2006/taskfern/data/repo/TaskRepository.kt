@@ -2,6 +2,7 @@ package com.riyadmondol2006.taskfern.data.repo
 
 import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.room.withTransaction
+import com.riyadmondol2006.taskfern.data.db.DueScope
 import com.riyadmondol2006.taskfern.data.db.OccurrenceAction
 import com.riyadmondol2006.taskfern.data.db.OccurrenceLogEntity
 import com.riyadmondol2006.taskfern.data.db.ReminderEntity
@@ -34,6 +35,8 @@ data class TaskDraft(
     val tags: List<String> = emptyList(),
     val pinned: Boolean = false,
     val recurrence: RecurrenceRule? = null,
+    /** [DueScope]: a day, or a plan for the week/month/year ending on [dueDate]. Plans have no time and do not repeat. */
+    val dueScope: Int = DueScope.DAY,
     /** Minutes before the due moment; empty = no reminder. */
     val reminderOffsets: List<Int> = emptyList(),
     val subtasks: List<String> = emptyList(),
@@ -73,6 +76,7 @@ class TaskRepository(
     fun observeRow(id: Long) = dao.observeRow(id)
     fun observeDetails(id: Long): Flow<TaskWithDetails?> = dao.observeDetails(id)
     fun observeDueCounts(from: LocalDate, to: LocalDate) = dao.observeDueCounts(from, to)
+    fun observePlans(today: LocalDate) = dao.observePlans(today)
     fun observeOpenRecurringDueBefore(to: LocalDate) = dao.observeOpenRecurringDueBefore(to)
     fun observeLists() = dao.observeLists()
     fun observeListsWithCounts() = dao.observeListsWithCounts()
@@ -136,7 +140,9 @@ class TaskRepository(
         require(title.isNotEmpty()) { "A task needs a title" }
         val id = db.withTransaction {
             val time = now()
-            val due = draft.dueDate ?: if (draft.recurrence != null) today() else null
+            val scope = draft.dueScope.takeIf { it in DueScope.WEEK..DueScope.YEAR && draft.dueDate != null } ?: DueScope.DAY
+            val recurrence = draft.recurrence.takeIf { scope == DueScope.DAY }
+            val due = draft.dueDate ?: if (recurrence != null) today() else null
             val id = dao.insert(
                 TaskEntity(
                     listId = draft.listId?.takeIf { dao.getList(it) != null },
@@ -144,11 +150,12 @@ class TaskRepository(
                     notes = draft.notes.trim(),
                     priority = draft.priority.coerceIn(0, 3),
                     dueDate = due,
-                    dueTime = if (due == null) null else draft.dueTime,
+                    dueTime = if (due == null || scope != DueScope.DAY) null else draft.dueTime,
+                    dueScope = scope,
                     tags = TaskEntity.tagsToColumn(draft.tags),
                     pinned = draft.pinned,
-                    recurrence = draft.recurrence,
-                    seriesAnchor = if (draft.recurrence != null) due else null,
+                    recurrence = recurrence,
+                    seriesAnchor = if (recurrence != null) due else null,
                     createdAt = time,
                     updatedAt = time,
                     position = dao.topPosition(),
@@ -176,8 +183,10 @@ class TaskRepository(
         require(title.isNotEmpty()) { "A task needs a title" }
         db.withTransaction {
             val old = dao.get(id) ?: return@withTransaction
-            val due = draft.dueDate ?: if (draft.recurrence != null) (old.dueDate ?: today()) else null
-            val scheduleChanged = due != old.dueDate || draft.recurrence?.copy(paused = false) != old.recurrence?.copy(paused = false)
+            val scope = draft.dueScope.takeIf { it in DueScope.WEEK..DueScope.YEAR && draft.dueDate != null } ?: DueScope.DAY
+            val rule = draft.recurrence.takeIf { scope == DueScope.DAY }
+            val due = draft.dueDate ?: if (rule != null) (old.dueDate ?: today()) else null
+            val scheduleChanged = due != old.dueDate || rule?.copy(paused = false) != old.recurrence?.copy(paused = false)
             dao.update(
                 old.copy(
                     title = title,
@@ -185,12 +194,13 @@ class TaskRepository(
                     listId = draft.listId?.takeIf { dao.getList(it) != null },
                     priority = draft.priority.coerceIn(0, 3),
                     dueDate = due,
-                    dueTime = if (due == null) null else draft.dueTime,
+                    dueTime = if (due == null || scope != DueScope.DAY) null else draft.dueTime,
+                    dueScope = scope,
                     tags = TaskEntity.tagsToColumn(draft.tags),
                     pinned = draft.pinned,
-                    recurrence = draft.recurrence,
+                    recurrence = rule,
                     seriesAnchor = when {
-                        draft.recurrence == null -> null
+                        rule == null -> null
                         scheduleChanged || old.seriesAnchor == null -> due
                         else -> old.seriesAnchor
                     },
@@ -223,6 +233,7 @@ class TaskRepository(
             if (t.recurrence != null && date == null) return@edit t // a series needs a date
             t.copy(
                 dueDate = date,
+                dueScope = DueScope.DAY,
                 dueTime = when {
                     date == null -> null
                     time != null -> time
@@ -234,6 +245,11 @@ class TaskRepository(
             )
         }
         if (date == null) db.withTransaction { ids.forEach { dao.clearReminders(it) } }
+    }
+
+    /** Plans the tasks for a week, month or year ending on [periodEnd] (no time; repeating tasks keep their day). */
+    suspend fun setPlan(ids: Collection<Long>, scope: Int, periodEnd: LocalDate) = edit(ids) { t ->
+        if (t.recurrence != null) t else t.copy(dueDate = periodEnd, dueTime = null, dueScope = scope, snoozeUntil = null)
     }
 
     suspend fun addTags(ids: Collection<Long>, tags: Collection<String>) =

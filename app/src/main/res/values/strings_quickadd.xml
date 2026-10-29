@@ -14,4 +14,5 @@
         <item quantity="one">%d added</item>
         <item quantity="other">%d added</item>
     </plurals>
+    <string name="quick_add_plan_for">Plan for %1$s</string>
 </resources>

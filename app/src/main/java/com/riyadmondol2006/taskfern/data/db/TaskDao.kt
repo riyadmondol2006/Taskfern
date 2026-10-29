@@ -50,6 +50,8 @@ private const val LIVE = "t.deleted_at IS NULL AND t.archived = 0"
 private const val OPEN = "$LIVE AND t.is_completed = 0"
 /** Paused recurring tasks stay in their list but are left out of date-driven views. */
 private const val NOT_PAUSED = "(t.rec_paused IS NULL OR t.rec_paused = 0)"
+/** Week/month/year plans are not day tasks; they join day lists only once their period has ended (overdue). */
+private const val DAY_TASK = "t.due_scope = 0"
 
 @Dao
 interface TaskDao {
@@ -59,10 +61,10 @@ interface TaskDao {
     @Query("$ROW_SELECT WHERE $OPEN ORDER BY t.pinned DESC, t.due_date IS NULL, t.due_date, t.due_time IS NULL, t.due_time, t.priority DESC, t.position, t.id")
     fun observeOpenRows(): Flow<List<TaskRow>>
 
-    @Query("$ROW_SELECT WHERE $OPEN AND $NOT_PAUSED AND t.due_date IS NOT NULL AND t.due_date <= :day ORDER BY t.due_date, t.due_time IS NULL, t.due_time, t.priority DESC, t.position, t.id")
+    @Query("$ROW_SELECT WHERE $OPEN AND $NOT_PAUSED AND t.due_date IS NOT NULL AND t.due_date <= :day AND ($DAY_TASK OR t.due_date < :day) ORDER BY t.due_date, t.due_time IS NULL, t.due_time, t.priority DESC, t.position, t.id")
     fun observeDueOnOrBefore(day: LocalDate): Flow<List<TaskRow>>
 
-    @Query("$ROW_SELECT WHERE $OPEN AND $NOT_PAUSED AND t.due_date BETWEEN :from AND :to ORDER BY t.due_date, t.due_time IS NULL, t.due_time, t.priority DESC, t.position, t.id")
+    @Query("$ROW_SELECT WHERE $OPEN AND $NOT_PAUSED AND $DAY_TASK AND t.due_date BETWEEN :from AND :to ORDER BY t.due_date, t.due_time IS NULL, t.due_time, t.priority DESC, t.position, t.id")
     fun observeDueBetween(from: LocalDate, to: LocalDate): Flow<List<TaskRow>>
 
     @Query("$ROW_SELECT WHERE $LIVE AND t.is_completed = 1 AND t.completed_at >= :since ORDER BY t.completed_at DESC")
@@ -92,11 +94,15 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :id")
     fun observeDetails(id: Long): Flow<TaskWithDetails?>
 
-    @Query("SELECT due_date, COUNT(*) AS count FROM tasks t WHERE $OPEN AND $NOT_PAUSED AND t.due_date BETWEEN :from AND :to GROUP BY t.due_date")
+    @Query("SELECT due_date, COUNT(*) AS count FROM tasks t WHERE $OPEN AND $NOT_PAUSED AND $DAY_TASK AND t.due_date BETWEEN :from AND :to GROUP BY t.due_date")
     fun observeDueCounts(from: LocalDate, to: LocalDate): Flow<List<DayCount>>
 
     @Query("SELECT * FROM tasks t WHERE $OPEN AND t.rec_frequency IS NOT NULL AND $NOT_PAUSED AND t.due_date IS NOT NULL AND t.due_date <= :to")
     fun observeOpenRecurringDueBefore(to: LocalDate): Flow<List<TaskEntity>>
+
+    /** Open plans whose period has not ended yet, soonest first. */
+    @Query("$ROW_SELECT WHERE $OPEN AND t.due_scope != 0 AND t.due_date >= :today ORDER BY t.due_date, t.due_scope, t.priority DESC, t.position, t.id")
+    fun observePlans(today: LocalDate): Flow<List<TaskRow>>
 
     @Query("SELECT DISTINCT tags FROM tasks WHERE tags != '' AND deleted_at IS NULL")
     fun observeTagColumns(): Flow<List<String>>

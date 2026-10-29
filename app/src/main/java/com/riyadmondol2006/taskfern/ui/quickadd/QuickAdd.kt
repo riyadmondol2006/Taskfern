@@ -65,7 +65,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.R
+import com.riyadmondol2006.taskfern.data.db.DueScope
 import com.riyadmondol2006.taskfern.data.db.TaskListEntity
+import com.riyadmondol2006.taskfern.domain.PlanPeriods
 import com.riyadmondol2006.taskfern.data.prefs.Settings
 import com.riyadmondol2006.taskfern.data.prefs.SettingsRepository
 import com.riyadmondol2006.taskfern.data.repo.TaskDraft
@@ -164,6 +166,8 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
         }
     }
     var date by rememberSaveable { mutableStateOf<LocalDate?>(null) }
+    /** Scope of a date picked from the menu: a day, or a week/month/year plan. */
+    var dateScope by rememberSaveable { mutableIntStateOf(DueScope.DAY) }
     var dateCleared by rememberSaveable { mutableStateOf(false) }
     var time by rememberSaveable { mutableStateOf<LocalTime?>(null) }
     var priority by rememberSaveable { mutableIntStateOf(0) }
@@ -180,9 +184,15 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     var listMenu by remember { mutableStateOf(false) }
 
     val parsed = remember(text, smartParsing) {
-        if (smartParsing) QuickAddParser.parse(text, today) else QuickAddParser.Result(text.trim())
+        if (smartParsing) QuickAddParser.parse(text, today, settings.weekStartsMonday) else QuickAddParser.Result(text.trim())
     }
     val effDate = if (dateCleared) null else date ?: parsed.date ?: defaultDate
+    val effScope = when {
+        dateCleared || effDate == null -> DueScope.DAY
+        date != null -> dateScope
+        parsed.date != null -> parsed.scope
+        else -> DueScope.DAY
+    }
     val effTime = time ?: parsed.time
     val effPriority = if (priority != 0) priority else parsed.priority ?: 0
     val effReminder = (reminderOn ?: settings.autoReminder) && effDate != null
@@ -206,7 +216,8 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
                 listId = listId,
                 priority = effPriority,
                 dueDate = effDate,
-                dueTime = effTime,
+                dueTime = effTime.takeIf { effScope == DueScope.DAY },
+                dueScope = effScope,
                 tags = parsed.tags,
                 recurrence = effRepeat,
                 reminderOffsets = if (effReminder) listOf(0) else emptyList(),
@@ -283,15 +294,29 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
                 FilterChip(
                     selected = effDate != null,
                     onClick = { dateMenu = true },
-                    label = { Text(effDate?.let { Formatters.relativeDay(context, it, today) } ?: stringResource(R.string.quick_add_date)) },
+                    label = {
+                        Text(
+                            effDate?.let { Formatters.taskDueLabel(context, effScope, it, null, today) } ?: stringResource(R.string.quick_add_date),
+                        )
+                    },
                     leadingIcon = { Icon(Icons.Outlined.Event, null, Modifier.size(18.dp)) },
                 )
                 DropdownMenu(dateMenu, onDismissRequest = { dateMenu = false }) {
-                    DropdownMenuItem(text = { Text(stringResource(R.string.today)) }, onClick = { date = today; dateCleared = false; dateMenu = false })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.tomorrow)) }, onClick = { date = today.plusDays(1); dateCleared = false; dateMenu = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.today)) }, onClick = { date = today; dateScope = DueScope.DAY; dateCleared = false; dateMenu = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.tomorrow)) }, onClick = { date = today.plusDays(1); dateScope = DueScope.DAY; dateCleared = false; dateMenu = false })
                     DropdownMenuItem(text = { Text(stringResource(R.string.quick_add_next_week)) }, onClick = {
-                        date = today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY)); dateCleared = false; dateMenu = false
+                        date = today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY)); dateScope = DueScope.DAY; dateCleared = false; dateMenu = false
                     })
+                    listOf(DueScope.WEEK to R.string.plan_this_week, DueScope.MONTH to R.string.plan_this_month, DueScope.YEAR to R.string.plan_this_year)
+                        .forEach { (scope, label) ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.quick_add_plan_for, stringResource(label))) },
+                                onClick = {
+                                    date = PlanPeriods.end(scope, today, 0, settings.weekStartsMonday)
+                                    dateScope = scope; dateCleared = false; dateMenu = false
+                                },
+                            )
+                        }
                     DropdownMenuItem(text = { Text(stringResource(R.string.quick_add_pick_date)) }, onClick = { dateMenu = false; showDatePicker = true })
                     DropdownMenuItem(text = { Text(stringResource(R.string.no_date)) }, onClick = {
                         date = null; time = null; dateCleared = true; dateMenu = false
@@ -315,7 +340,8 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
             }
             // Time
             FilterChip(
-                selected = effTime != null,
+                selected = effTime != null && effScope == DueScope.DAY,
+                enabled = effScope == DueScope.DAY,
                 onClick = { showTimePicker = true },
                 label = { Text(effTime?.let { Formatters.time(context, it) } ?: stringResource(R.string.quick_add_time)) },
                 leadingIcon = { Icon(Icons.Outlined.Schedule, null, Modifier.size(18.dp)) },
@@ -364,7 +390,7 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
         }
     }
 
-    if (showDatePicker) DatePickerSheet(initial = effDate, onPick = { date = it; dateCleared = false }, onDismiss = { showDatePicker = false })
+    if (showDatePicker) DatePickerSheet(initial = effDate, onPick = { date = it; dateScope = DueScope.DAY; dateCleared = false }, onDismiss = { showDatePicker = false })
     if (showTimePicker) {
         TimePickerDialog(
             initial = effTime,

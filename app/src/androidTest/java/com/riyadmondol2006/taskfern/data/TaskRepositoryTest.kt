@@ -204,4 +204,28 @@ class TaskRepositoryTest {
         steps.drop(1).forEach { routines.setStepChecked(it.id, rid, today, true) }
         assertEquals(5, routines.observeRoutineStreaks(today).first()[rid]?.current)
     }
+
+    @Test fun plansStayOutOfDayListsUntilTheirPeriodEnds() = runBlocking<Unit> {
+        val weekEnd = com.riyadmondol2006.taskfern.domain.PlanPeriods.end(com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, today, 0)
+        val id = repo.create(
+            TaskDraft(
+                title = "Clean the garage", dueDate = weekEnd, dueTime = java.time.LocalTime.NOON,
+                dueScope = com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, recurrence = RecurrenceRule.daily(),
+            ),
+        )
+        val t = repo.get(id)!!
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, t.dueScope)
+        assertNull("plans have no time", t.dueTime)
+        assertNull("plans do not repeat", t.recurrence)
+        // Not in Today's day list or the calendar, but in Plans.
+        assertTrue(repo.observeDueOnOrBefore(weekEnd).first().none { it.task.id == id })
+        assertTrue(repo.observeDueBetween(today, weekEnd).first().none { it.task.id == id })
+        assertEquals(1, repo.observePlans(today).first().size)
+        // Once the week is over it is simply overdue.
+        assertTrue(repo.observeDueOnOrBefore(weekEnd.plusDays(1)).first().any { it.task.id == id })
+        // Picking a day turns it back into a day task.
+        repo.setDueDate(listOf(id), today)
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.DAY, repo.get(id)!!.dueScope)
+        assertTrue(repo.observeDueOnOrBefore(today).first().any { it.task.id == id })
+    }
 }

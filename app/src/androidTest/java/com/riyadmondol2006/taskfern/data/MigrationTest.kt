@@ -41,9 +41,36 @@ class MigrationTest {
     }
 
     @Test
+    fun migrate1To2KeepsTasksAndAddsDueScope() {
+        helper.createDatabase(dbName, 1).apply {
+            execSQL("INSERT INTO task_lists (id, name, color, icon, position, favorite, created_at) VALUES (1, 'Home', 0, 'list', 0, 0, 0)")
+            execSQL(
+                "INSERT INTO tasks (id, list_id, title, notes, priority, due_date, tags, pinned, archived, is_completed, created_at, updated_at, position, occurrence_count) " +
+                    "VALUES (7, 1, 'Water the ferns', 'balcony', 2, 20390, ',home,', 0, 0, 0, 1, 2, 0, 0)",
+            )
+            execSQL("INSERT INTO shopping_lists (id, name, color, position, created_at) VALUES (1, 'Groceries', 0, 0, 0)")
+            close()
+        }
+        val db = helper.runMigrationsAndValidate(dbName, 2, true, TaskfernDatabase.MIGRATION_1_2)
+        db.query("SELECT title, notes, priority, due_date, tags, due_scope FROM tasks WHERE id = 7").use { c ->
+            c.moveToFirst()
+            assertEquals("Water the ferns", c.getString(0))
+            assertEquals("balcony", c.getString(1))
+            assertEquals(2, c.getInt(2))
+            assertEquals(20390L, c.getLong(3))
+            assertEquals(",home,", c.getString(4))
+            assertEquals(0, c.getInt(5)) // existing tasks are plain day tasks
+        }
+        db.query("SELECT COUNT(*) FROM shopping_lists").use { c ->
+            c.moveToFirst()
+            assertEquals(1, c.getInt(0))
+        }
+        db.close()
+    }
+
+    @Test
     fun migrateAll() {
-        // Version 1 is the first released schema; there is nothing to migrate from yet. Opening the oldest exported
-        // version and migrating to the newest must keep user rows.
+        // From the oldest exported schema to the newest with every migration.
         helper.createDatabase(dbName, 1).apply {
             execSQL("INSERT INTO shopping_lists (id, name, color, position, created_at) VALUES (1, 'Groceries', 0, 0, 0)")
             close()

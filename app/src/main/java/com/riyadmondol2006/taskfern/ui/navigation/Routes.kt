@@ -36,6 +36,7 @@ object SmartViewKey {
     const val NO_DATE = "no_date"
     const val COMPLETED = "completed"
     const val RECENT = "recent"
+    const val PLANS = "plans"
     const val ALL = "all"
     const val TRASH = "trash"
     const val ARCHIVED = "archived"

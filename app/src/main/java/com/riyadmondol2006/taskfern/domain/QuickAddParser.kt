@@ -26,6 +26,8 @@ object QuickAddParser {
         val tags: List<String> = emptyList(),
         /** A repeat rule from phrases like "every monday", "daily", "every 3 days". */
         val recurrence: RecurrenceRule? = null,
+        /** [com.riyadmondol2006.taskfern.data.db.DueScope]: a plan for "this week/month/year"; [date] is the period's end. */
+        val scope: Int = com.riyadmondol2006.taskfern.data.db.DueScope.DAY,
         /** The fragments that were recognised, in order, for display ("tomorrow", "at 6pm", "!!"). */
         val recognised: List<String> = emptyList(),
     ) {
@@ -57,10 +59,13 @@ object QuickAddParser {
         listOf("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
             "mon", "tues", "tue", "weds", "wed", "thurs", "thur", "thu", "fri", "sat", "sun").joinToString("|")
 
-    fun parse(input: String, today: LocalDate): Result {
+    private val planRegex = Regex("""(?<!\w)(?:(?:sometime|some time|by the end of|by end of)\s+)?(this|next)\s+(week|month|year)(?!\w)""", RegexOption.IGNORE_CASE)
+
+    fun parse(input: String, today: LocalDate, weekStartsMonday: Boolean = true): Result {
         var text = " " + input.trim() + " "
         val recognised = mutableListOf<String>()
         var date: LocalDate? = null
+        var planEnd: LocalDate? = null
         var time: LocalTime? = null
         var priority: Int? = null
         val tags = mutableListOf<String>()
@@ -75,6 +80,25 @@ object QuickAddParser {
             recurrence = rule
             recognised += text.substring(range).trim()
             consume(range)
+        }
+
+        // Plans: "this week", "this month", "this year", "next month", "next year". "next week" stays a date (Monday).
+        var scope = com.riyadmondol2006.taskfern.data.db.DueScope.DAY
+        if (recurrence == null) {
+            // A bare "next week" means next Monday (a date); "sometime next week" / "by the end of next week" are plans.
+            planRegex.findAll(text).firstOrNull { m -> !(m.value.trim().startsWith("next", true) && m.groupValues[2].equals("week", true)) }
+                ?.let { m ->
+                    val s = when (m.groupValues[2].lowercase()) {
+                        "week" -> com.riyadmondol2006.taskfern.data.db.DueScope.WEEK
+                        "month" -> com.riyadmondol2006.taskfern.data.db.DueScope.MONTH
+                        else -> com.riyadmondol2006.taskfern.data.db.DueScope.YEAR
+                    }
+                    val offset = if (m.groupValues[1].equals("next", true)) 1 else 0
+                    scope = s
+                    planEnd = PlanPeriods.end(s, today, offset, weekStartsMonday)
+                    recognised += m.value.trim()
+                    consume(m.range)
+                }
         }
 
         // Time first so "at 5pm" is not partly eaten by other rules.
@@ -152,6 +176,12 @@ object QuickAddParser {
         }
         tags.forEach { recognised += "#$it" }
 
+        // A plan is due at the end of its period, has no time and ignores other date words.
+        if (planEnd != null) {
+            date = planEnd
+            time = null
+        }
+
         // A repeating task starts on its first occurrence on or after today (e.g. the coming Monday).
         recurrence?.let { rule ->
             if (date == null) date = RecurrenceEngine.realign(rule, today, null, today) ?: today
@@ -165,7 +195,7 @@ object QuickAddParser {
         return if (title.isEmpty()) {
             Result(title = input.trim()) // never produce an empty title; fall back to the literal text
         } else {
-            Result(title, date, time, priority, tags.distinct(), recurrence, recognised)
+            Result(title, date, time, priority, tags.distinct(), recurrence, scope, recognised)
         }
     }
 

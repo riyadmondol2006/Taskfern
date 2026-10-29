@@ -128,4 +128,34 @@ class QuickAddParserTest {
         assertNull(parse("Dailymotion upload").recurrence)
         assertEquals("Read every chapter", parse("Read every chapter").title)
     }
+
+    // ---- Plans -------------------------------------------------------------------------------------------------------
+
+    @Test fun `this week month and year become plans`() {
+        val w = parse("Clean the garage this week")
+        assertEquals("Clean the garage", w.title)
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, w.scope)
+        assertEquals(LocalDate.of(2026, 11, 1), w.date)
+        assertNull(w.time)
+        val m = parse("Book dentist this month")
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.MONTH, m.scope)
+        assertEquals(LocalDate.of(2026, 10, 31), m.date)
+        assertEquals(LocalDate.of(2027, 12, 31), parse("Learn Spanish next year").date)
+        assertEquals(LocalDate.of(2026, 11, 30), parse("Renew insurance next month").date)
+    }
+
+    @Test fun `bare next week stays a date but sometime next week is a plan`() {
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.DAY, parse("Plan next week").scope)
+        assertEquals(LocalDate.of(2026, 11, 2), parse("Plan next week").date)
+        val p = parse("Call the bank sometime next week")
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, p.scope)
+        assertEquals(LocalDate.of(2026, 11, 8), p.date)
+        assertEquals("Call the bank", p.title)
+    }
+
+    @Test fun `a plan ignores a time`() {
+        val r = parse("Finish report this week at 5pm")
+        assertEquals(com.riyadmondol2006.taskfern.data.db.DueScope.WEEK, r.scope)
+        assertNull(r.time)
+    }
 }

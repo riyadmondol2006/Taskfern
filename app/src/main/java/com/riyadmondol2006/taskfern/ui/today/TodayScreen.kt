@@ -203,6 +203,17 @@ fun TodayScreen(nav: AppNavigator) {
                 }
             }
 
+            if (state.plans.isNotEmpty()) {
+                item(key = "plans-h") {
+                    SectionHeader(stringResource(R.string.view_plans), count = state.plans.size, trailing = {
+                        TextButton(onClick = { nav.openTaskList(SmartViewKey.PLANS) }) { Text(stringResource(R.string.today_see_all)) }
+                    })
+                }
+                items(state.plans.take(5), key = { "p${it.task.id}" }) { row ->
+                    TodayTask(row, vm, nav, selection, streaks[row.task.id]?.current ?: 0)
+                }
+            }
+
             if (state.upcomingReminders.isNotEmpty()) {
                 item(key = "rem-h") { SectionHeader(stringResource(R.string.today_upcoming_reminders)) }
                 items(state.upcomingReminders, key = { "r${it.task.id}" }) { row ->
