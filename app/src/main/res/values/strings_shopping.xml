@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shopping home -->
+    <string name="shopping_title">Shopping</string>
+    <string name="shopping_new_list">New list</string>
+    <string name="shopping_create">Create</string>
+    <string name="shopping_edit_list">Edit name &amp; colour</string>
+    <string name="shopping_list_name">Name</string>
+    <string name="shopping_list_name_hint">e.g. Groceries</string>
+    <string name="shopping_list_color">Colour</string>
+    <string name="shopping_color_option">Colour %1$d</string>
+    <string name="shopping_list_options">Options for %1$s</string>
+    <string name="shopping_from_template">From a template</string>
+    <string name="shopping_manage_templates">Manage templates</string>
+    <string name="shopping_no_templates">No shopping templates yet. Create one in Templates to start a list in one tap.</string>
+    <string name="shopping_empty_title">No shopping lists yet</string>
+    <string name="shopping_empty_message">Make a list for groceries, the pharmacy or anything you buy often. Taskfern remembers what you buy so the next list is quicker.</string>
+    <string name="shopping_card_empty">Nothing on the list</string>
+    <string name="shopping_card_all_done">Everything is in the cart</string>
+    <plurals name="shopping_card_remaining">
+        <item quantity="one">%1$d of %2$d left to buy</item>
+        <item quantity="other">%1$d of %2$d left to buy</item>
+    </plurals>
+    <string name="shopping_copy_name">%1$s (copy)</string>
+    <string name="shopping_duplicated">Copy created</string>
+    <string name="shopping_delete_list_title">Delete this list?</string>
+    <string name="shopping_delete_list_message">“%1$s” and all its items will be removed. This cannot be undone.</string>
+
+    <!-- Shopping list -->
+    <string name="shopping_duplicate_list">Duplicate list</string>
+    <string name="shopping_delete_list">Delete list</string>
+    <string name="shopping_show_cart">Show items in the cart</string>
+    <string name="shopping_hide_cart">Hide items in the cart</string>
+    <string name="shopping_uncheck_all">Uncheck all</string>
+    <string name="shopping_unchecked_all">All items are back on the list</string>
+    <string name="shopping_clear_cart">Remove items in the cart</string>
+    <string name="shopping_clear_cart_short">Clear</string>
+    <string name="shopping_show_prices">Show prices &amp; total</string>
+    <string name="shopping_hide_prices">Hide prices &amp; total</string>
+    <string name="shopping_in_cart">In the cart</string>
+    <string name="shopping_all_in_cart">All done. Everything is in the cart.</string>
+    <string name="shopping_list_empty_title">This list is empty</string>
+    <string name="shopping_list_empty_message">Type below to add items. Amounts work too, like “2 kg rice” or “eggs x12”.</string>
+    <plurals name="shopping_progress">
+        <item quantity="one">%1$d of %2$d in the cart</item>
+        <item quantity="other">%1$d of %2$d in the cart</item>
+    </plurals>
+    <plurals name="shopping_left">
+        <item quantity="one">%d left</item>
+        <item quantity="other">%d left</item>
+    </plurals>
+    <plurals name="shopping_cleared">
+        <item quantity="one">%d item removed</item>
+        <item quantity="other">%d items removed</item>
+    </plurals>
+    <string name="shopping_item_deleted">Removed “%1$s”</string>
+    <string name="shopping_edit_item">Edit %1$s</string>
+    <string name="shopping_total_estimate">About %1$s</string>
+    <string name="shopping_total_in_cart">%1$s in the cart</string>
+    <plurals name="shopping_total_unpriced">
+        <item quantity="one">%d item has no price yet</item>
+        <item quantity="other">%d items have no price yet</item>
+    </plurals>
+    <string name="shopping_total_hint">Add prices in an item’s details to see an estimated total.</string>
+
+    <!-- Sharing -->
+    <string name="shopping_share_title">Share list</string>
+    <string name="shopping_share_empty">Add some items before sharing the list</string>
+    <string name="shopping_share_unavailable">No app on this device can share text</string>
+
+    <!-- Quick entry -->
+    <string name="shopping_entry_hint">Add an item, e.g. 2 kg rice</string>
+    <string name="shopping_add_item">Add item</string>
+    <string name="shopping_buy_again">Buy again</string>
+    <string name="shopping_duplicate_title">“%1$s” is already on the list</string>
+    <string name="shopping_duplicate_current">Currently %1$s</string>
+    <string name="shopping_duplicate_merge">Make it %1$s</string>
+    <string name="shopping_duplicate_add_anyway">Add separately</string>
+    <string name="shopping_duplicate_keep">Keep one</string>
+
+    <!-- Item details -->
+    <string name="shopping_item_details">Item details</string>
+    <string name="shopping_item_name">Name</string>
+    <string name="shopping_item_name_required">An item needs a name</string>
+    <string name="shopping_item_quantity">Quantity</string>
+    <string name="shopping_item_unit">Unit</string>
+    <string name="shopping_item_unit_hint">kg, pack, bottle…</string>
+    <string name="shopping_item_price">Price per unit</string>
+    <string name="shopping_item_price_help">Optional. Used for the estimated total.</string>
+    <string name="shopping_item_price_invalid">Use a number like 2.50</string>
+    <string name="shopping_item_price_line">%1$s comes to %2$s</string>
+    <string name="shopping_item_note">Note</string>
+    <string name="shopping_item_note_hint">Brand, size, where to find it…</string>
+    <string name="shopping_item_aisle">Aisle</string>
+    <string name="shopping_item_order">Order in this aisle</string>
+    <string name="shopping_move_up">Move up</string>
+    <string name="shopping_move_down">Move down</string>
+
+    <!-- Aisles -->
+    <string name="shopping_cat_produce">Produce</string>
+    <string name="shopping_cat_dairy">Dairy &amp; eggs</string>
+    <string name="shopping_cat_bakery">Bakery</string>
+    <string name="shopping_cat_meat">Meat &amp; fish</string>
+    <string name="shopping_cat_pantry">Pantry</string>
+    <string name="shopping_cat_frozen">Frozen</string>
+    <string name="shopping_cat_drinks">Drinks</string>
+    <string name="shopping_cat_snacks">Snacks</string>
+    <string name="shopping_cat_household">Household</string>
+    <string name="shopping_cat_personal">Personal care</string>
+    <string name="shopping_cat_baby_pet">Baby &amp; pet</string>
+    <string name="shopping_cat_other">Other</string>
+</resources>
