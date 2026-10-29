@@ -13,7 +13,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -56,7 +55,6 @@ class TodayWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TodayWidget()
 }
 
-private const val MORE_ITEM_ID = -2L
 
 @Composable
 private fun TodayCompact(model: TodayModel, appWidgetId: Int) {
@@ -153,18 +151,14 @@ private fun TodayList(model: TodayModel, appWidgetId: Int, detailed: Boolean) {
                 modifier = GlanceModifier.defaultWeight(),
             )
         } else {
-            LazyColumn(modifier = GlanceModifier.defaultWeight().fillMaxWidth()) {
-                items(model.tasks, itemId = { it.id }) { task -> TodayTaskRow(task, model.today, detailed) }
-                if (model.hiddenCount > 0) {
-                    item(itemId = MORE_ITEM_ID) {
-                        Text(
-                            context.resources.getQuantityString(R.plurals.widget_more_in_app, model.hiddenCount, model.hiddenCount),
-                            style = WidgetTextStyles.label(),
-                            modifier = GlanceModifier.fillMaxWidth().padding(8.dp).clickable(openToday),
-                        )
-                    }
-                }
-            }
+            FittingRows(
+                items = model.tasks,
+                alreadyHidden = model.hiddenCount,
+                rowHeight = if (detailed) 60.dp else 52.dp,
+                reservedHeight = 112.dp,
+                moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
+                modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
+            ) { task -> TodayTaskRow(task, model.today, detailed) }
         }
     }
 }
@@ -173,7 +167,9 @@ private fun TodayList(model: TodayModel, appWidgetId: Int, detailed: Boolean) {
 private fun TodayTaskRow(task: WidgetTask, today: LocalDate, detailed: Boolean) {
     val context = LocalContext.current
     val colors = GlanceTheme.colors
-    CardRow(onClick = actionStartActivity(WidgetIntents.task(context, task.id))) {
+    // Rows inside the list only run callbacks. Mixing an "open the app" action into collection items makes Glance route
+    // every tap through an activity trampoline, which plays a launcher app-open transition on each check-off.
+    CardRow(onClick = null) {
         CheckControl(
             checked = false,
             description = context.getString(R.string.widget_complete_task, task.title),

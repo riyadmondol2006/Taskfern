@@ -16,7 +16,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -52,7 +51,6 @@ class ShoppingWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = ShoppingWidget()
 }
 
-private const val MORE_ITEM_ID = -2L
 
 @Composable
 private fun NoShoppingLists() {
@@ -121,26 +119,23 @@ private fun ShoppingList(model: ShoppingModel.Showing, appWidgetId: Int, compact
                 modifier = GlanceModifier.defaultWeight(),
             )
         } else {
-            LazyColumn(modifier = GlanceModifier.defaultWeight().fillMaxWidth()) {
-                items(model.items, itemId = { it.id }) { item -> ShoppingItemRow(item, openList) }
-                if (model.hiddenCount > 0) {
-                    item(itemId = MORE_ITEM_ID) {
-                        Text(
-                            context.resources.getQuantityString(R.plurals.widget_more_in_app, model.hiddenCount, model.hiddenCount),
-                            style = WidgetTextStyles.label(),
-                            modifier = GlanceModifier.fillMaxWidth().padding(8.dp).clickable(openList),
-                        )
-                    }
-                }
-            }
+            FittingRows(
+                items = model.items,
+                alreadyHidden = model.hiddenCount,
+                rowHeight = 48.dp,
+                reservedHeight = 80.dp,
+                moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
+                modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
+            ) { item -> ShoppingItemRow(item) }
         }
     }
 }
 
 @Composable
-private fun ShoppingItemRow(item: WidgetShoppingItem, openList: androidx.glance.action.Action) {
+private fun ShoppingItemRow(item: WidgetShoppingItem) {
     val context = LocalContext.current
-    CardRow(onClick = openList) {
+    // Callbacks only inside the list (see TodayWidget): the header and the add button open the list in the app.
+    CardRow(onClick = null) {
         CheckControl(
             checked = false,
             description = context.getString(R.string.widget_shopping_check, item.name),

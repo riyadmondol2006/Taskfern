@@ -271,3 +271,35 @@ fun NoticeBanner(text: String, action: Action) {
         }
     }
 }
+
+/**
+ * The rows that fit the widget's current height, drawn as plain views rather than a collection. Callbacks in a
+ * collection (LazyColumn) go through an activity trampoline, which makes the launcher play an app-open transition on
+ * every check-off; plain views send their broadcast directly. Rows that do not fit are summarised by [moreLabel].
+ */
+@Composable
+fun <T> FittingRows(
+    items: List<T>,
+    alreadyHidden: Int,
+    rowHeight: androidx.compose.ui.unit.Dp,
+    reservedHeight: androidx.compose.ui.unit.Dp,
+    moreLabel: (Int) -> String,
+    modifier: GlanceModifier = GlanceModifier,
+    row: @Composable (T) -> Unit,
+) {
+    val available = androidx.glance.LocalSize.current.height - reservedHeight
+    val capacity = (available.value / rowHeight.value).toInt().coerceIn(1, 8)
+    val needsMoreLine = items.size > capacity || alreadyHidden > 0
+    val shown = items.take(if (needsMoreLine && items.size >= capacity) (capacity - 1).coerceAtLeast(1) else capacity)
+    val hidden = alreadyHidden + (items.size - shown.size)
+    Column(modifier = modifier) {
+        shown.forEach { row(it) }
+        if (hidden > 0) {
+            androidx.glance.text.Text(
+                moreLabel(hidden),
+                style = WidgetTextStyles.label(),
+                modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+        }
+    }
+}

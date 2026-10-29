@@ -14,7 +14,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
@@ -130,9 +129,14 @@ private fun RoutineChecklist(model: RoutineModel.Showing, appWidgetId: Int, comp
                 modifier = GlanceModifier.defaultWeight(),
                 action = { ChipButton(context.getString(R.string.widget_open_routine, model.name), openRoutine) },
             )
-            else -> LazyColumn(modifier = GlanceModifier.defaultWeight().fillMaxWidth()) {
-                items(model.steps, itemId = { it.id }) { step -> StepRow(step, model) }
-            }
+            else -> FittingRows(
+                items = model.steps,
+                alreadyHidden = 0,
+                rowHeight = 48.dp,
+                reservedHeight = 88.dp,
+                moreLabel = { n -> context.resources.getQuantityString(R.plurals.widget_more_in_app, n, n) },
+                modifier = GlanceModifier.defaultWeight().fillMaxWidth(),
+            ) { step -> StepRow(step, model) }
         }
     }
 }
