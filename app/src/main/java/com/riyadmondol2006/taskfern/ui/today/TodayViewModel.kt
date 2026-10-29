@@ -20,7 +20,15 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 
-data class RoutineSummary(val id: Long, val name: String, val emoji: String, val total: Int, val done: Int)
+data class RoutineSummary(
+    val id: Long,
+    val name: String,
+    val emoji: String,
+    val total: Int,
+    val done: Int,
+    /** Fully completed scheduled days in a row (today included once it is done). */
+    val streak: Int = 0,
+)
 
 data class TodayState(
     val loaded: Boolean = false,
@@ -62,11 +70,15 @@ class TodayViewModel(
     }
 
     private val routinePart = day.flatMapLatest { today ->
-        combine(routines.observeRoutines(), routines.observeAllSteps(), routines.observeChecksOn(today)) { rs, steps, checks ->
+        combine(
+            routines.observeRoutines(), routines.observeAllSteps(), routines.observeChecksOn(today), routines.observeRoutineStreaks(today),
+        ) { rs, steps, checks, streaks ->
             val stepCount = steps.groupingBy { it.routineId }.eachCount()
             val doneCount = checks.groupingBy { it.routineId }.eachCount()
             rs.filter { !it.paused && RoutineRepository.runsOn(it, today) && (stepCount[it.id] ?: 0) > 0 }
-                .map { RoutineSummary(it.id, it.name, it.emoji, stepCount[it.id] ?: 0, doneCount[it.id] ?: 0) }
+                .map {
+                    RoutineSummary(it.id, it.name, it.emoji, stepCount[it.id] ?: 0, doneCount[it.id] ?: 0, streaks[it.id]?.current ?: 0)
+                }
         }
     }
 

@@ -97,6 +97,19 @@
     <string name="paused">Paused</string>
     <string name="pinned">Pinned</string>
 
+    <!-- Streaks -->
+    <plurals name="streak_in_a_row">
+        <item quantity="one">%d in a row</item>
+        <item quantity="other">%d in a row</item>
+    </plurals>
+    <plurals name="streak_days">
+        <item quantity="one">%d-day streak</item>
+        <item quantity="other">%d-day streak</item>
+    </plurals>
+    <string name="streak_best">Best %1$d</string>
+    <string name="streak_history_description">Done %1$d of the last %2$d times</string>
+    <string name="streak_restart_hint">Complete the next one on time to start a new streak.</string>
+
     <!-- Priority -->
     <string name="priority_none">No priority</string>
     <string name="priority_low">Low</string>

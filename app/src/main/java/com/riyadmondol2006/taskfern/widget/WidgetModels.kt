@@ -129,6 +129,8 @@ sealed interface RoutineModel {
         val status: RoutineStatus,
         val steps: List<WidgetStep>,
         val configuredMissing: Boolean,
+        /** Fully completed scheduled days in a row. */
+        val streak: Int = 0,
     ) : RoutineModel {
         val done: Int get() = steps.count { it.checked }
         val total: Int get() = steps.size
@@ -258,6 +260,7 @@ object WidgetModels {
         steps: List<RoutineStepWithCheck>,
         today: LocalDate,
         configuredMissing: Boolean,
+        streak: Int = 0,
     ) = RoutineModel.Showing(
         routineId = routine.id,
         name = routine.name,
@@ -266,5 +269,6 @@ object WidgetModels {
         status = routineStatus(routine, today),
         steps = steps.map { WidgetStep(it.step.id, it.step.title, it.checked) },
         configuredMissing = configuredMissing,
+        streak = streak,
     )
 }

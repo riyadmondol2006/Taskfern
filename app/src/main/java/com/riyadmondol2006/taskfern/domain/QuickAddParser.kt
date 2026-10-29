@@ -1,5 +1,8 @@
 package com.riyadmondol2006.taskfern.domain
 
+import com.riyadmondol2006.taskfern.domain.recurrence.Frequency
+import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceEngine
+import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -21,6 +24,8 @@ object QuickAddParser {
         val time: LocalTime? = null,
         val priority: Int? = null,
         val tags: List<String> = emptyList(),
+        /** A repeat rule from phrases like "every monday", "daily", "every 3 days". */
+        val recurrence: RecurrenceRule? = null,
         /** The fragments that were recognised, in order, for display ("tomorrow", "at 6pm", "!!"). */
         val recognised: List<String> = emptyList(),
     ) {
@@ -62,6 +67,14 @@ object QuickAddParser {
 
         fun consume(range: IntRange) {
             text = text.replaceRange(range, " ")
+        }
+
+        // Repeats before dates, so "every monday" is a rule rather than next Monday's date.
+        var recurrence: RecurrenceRule? = null
+        parseRepeat(text)?.let { (rule, range) ->
+            recurrence = rule
+            recognised += text.substring(range).trim()
+            consume(range)
         }
 
         // Time first so "at 5pm" is not partly eaten by other rules.
@@ -139,6 +152,11 @@ object QuickAddParser {
         }
         tags.forEach { recognised += "#$it" }
 
+        // A repeating task starts on its first occurrence on or after today (e.g. the coming Monday).
+        recurrence?.let { rule ->
+            if (date == null) date = RecurrenceEngine.realign(rule, today, null, today) ?: today
+        }
+
         // A time with no date means today. It is not moved to tomorrow when the time has passed; the preview shows
         // "Today 9:00" so the user can see and change it.
         if (time != null && date == null) date = today
@@ -147,8 +165,47 @@ object QuickAddParser {
         return if (title.isEmpty()) {
             Result(title = input.trim()) // never produce an empty title; fall back to the literal text
         } else {
-            Result(title, date, time, priority, tags.distinct(), recognised)
+            Result(title, date, time, priority, tags.distinct(), recurrence, recognised)
         }
+    }
+
+    private val unitWords = "(day|days|week|weeks|month|months|year|years)"
+    private val dayList = "((?:${weekdayNamesPattern()})(?:\\s*(?:,|and|&)\\s*(?:${weekdayNamesPattern()}))*)"
+    private val repeatPatterns: List<Pair<Regex, (MatchResult) -> RecurrenceRule?>> = listOf(
+        Regex("""(?<!\w)every\s+(\d{1,3})\s+$unitWords(?!\w)""", RegexOption.IGNORE_CASE) to { m ->
+            m.groupValues[1].toInt().takeIf { it in 1..999 }?.let { n -> RecurrenceRule(unitOf(m.groupValues[2]), n) }
+        },
+        Regex("""(?<!\w)every\s+other\s+$unitWords(?!\w)""", RegexOption.IGNORE_CASE) to { m -> RecurrenceRule(unitOf(m.groupValues[1]), 2) },
+        Regex("""(?<!\w)(?:every\s+(?:weekday|work\s*day)s?|on\s+weekdays|weekdays)(?!\w)""", RegexOption.IGNORE_CASE) to { _ -> RecurrenceRule.weekdays() },
+        Regex("""(?<!\w)(?:every\s+weekend|on\s+weekends|weekends)(?!\w)""", RegexOption.IGNORE_CASE) to { _ ->
+            RecurrenceRule(Frequency.WEEKLY, 1, RecurrenceRule.WEEKEND_MASK)
+        },
+        Regex("""(?<!\w)every\s+$dayList(?!\w)""", RegexOption.IGNORE_CASE) to { m ->
+            val days = Regex(weekdayNamesPattern(), RegexOption.IGNORE_CASE).findAll(m.groupValues[1])
+                .mapNotNull { weekdayNames[it.value.lowercase()] }.toList()
+            if (days.isEmpty()) null else RecurrenceRule(Frequency.WEEKLY, 1, RecurrenceRule.weekdayMask(*days.toTypedArray()))
+        },
+        Regex("""(?<!\w)(?:every\s+day|each\s+day|daily)(?!\w)""", RegexOption.IGNORE_CASE) to { _ -> RecurrenceRule.daily() },
+        Regex("""(?<!\w)(?:every\s+week|weekly)(?!\w)""", RegexOption.IGNORE_CASE) to { _ -> RecurrenceRule(Frequency.WEEKLY) },
+        Regex("""(?<!\w)(?:every\s+month|monthly)(?!\w)""", RegexOption.IGNORE_CASE) to { _ -> RecurrenceRule.monthly() },
+        Regex("""(?<!\w)(?:every\s+year|yearly|annually)(?!\w)""", RegexOption.IGNORE_CASE) to { _ -> RecurrenceRule.yearly() },
+    )
+
+    private fun unitOf(word: String): Frequency = when {
+        word.startsWith("day", ignoreCase = true) -> Frequency.DAILY
+        word.startsWith("week", ignoreCase = true) -> Frequency.WEEKLY
+        word.startsWith("month", ignoreCase = true) -> Frequency.MONTHLY
+        else -> Frequency.YEARLY
+    }
+
+    /** The first repeat phrase in [text] and where it is. */
+    private fun parseRepeat(text: String): Pair<RecurrenceRule, IntRange>? {
+        for ((regex, build) in repeatPatterns) {
+            val m = regex.find(text) ?: continue
+            val rule = build(m) ?: continue
+            return rule to m.range
+        }
+        return null
     }
 
     private fun parseTime(m: MatchResult): LocalTime? {

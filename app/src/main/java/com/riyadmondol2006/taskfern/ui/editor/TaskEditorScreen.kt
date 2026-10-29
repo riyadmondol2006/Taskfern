@@ -2,6 +2,11 @@ package com.riyadmondol2006.taskfern.ui.editor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -117,6 +122,7 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
     val task by vm.task.collectAsStateWithLifecycle()
     val subtasks by vm.subtasks.collectAsStateWithLifecycle()
     val log by vm.log.collectAsStateWithLifecycle()
+    val streak by vm.streak.collectAsStateWithLifecycle()
     val lists by vm.lists.collectAsStateWithLifecycle()
     val allTags by vm.allTags.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
@@ -356,6 +362,9 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    if (rule != null && streak.best > 0) {
+                        HabitStreak(streak, log)
+                    }
                 }
             }
             HorizontalDivider(Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
@@ -439,6 +448,67 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
             onSave = vm::setRecurrence,
             onDismiss = { showRepeat = false },
         )
+    }
+}
+
+/** Current and best streak of a repeating task, with its last occurrences as dots (newest on the right). */
+@Composable
+private fun HabitStreak(streak: com.riyadmondol2006.taskfern.domain.Streak, log: List<com.riyadmondol2006.taskfern.data.db.OccurrenceLogEntity>) {
+    val recent = log.sortedBy { it.occurrenceDate }.takeLast(14)
+    androidx.compose.material3.Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    androidx.compose.material.icons.Icons.Outlined.LocalFireDepartment, null,
+                    tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    androidx.compose.ui.res.pluralStringResource(R.plurals.streak_in_a_row, streak.current, streak.current),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    stringResource(R.string.streak_best, streak.best),
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (recent.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                val done = MaterialTheme.colorScheme.tertiary
+                val skipped = MaterialTheme.colorScheme.outline
+                val described = stringResource(
+                    R.string.streak_history_description,
+                    recent.count { it.action == OccurrenceAction.COMPLETED }, recent.size,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.semantics { contentDescription = described },
+                ) {
+                    recent.forEach { entry ->
+                        val isDone = entry.action == OccurrenceAction.COMPLETED
+                        androidx.compose.foundation.layout.Box(
+                            Modifier.size(12.dp)
+                                .then(
+                                    if (isDone) Modifier.background(done, androidx.compose.foundation.shape.CircleShape)
+                                    else Modifier.border(1.5.dp, skipped, androidx.compose.foundation.shape.CircleShape),
+                                ),
+                        )
+                    }
+                }
+            }
+            if (streak.current == 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.streak_restart_hint),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

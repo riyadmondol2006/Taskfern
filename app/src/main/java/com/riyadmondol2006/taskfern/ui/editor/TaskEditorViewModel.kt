@@ -11,6 +11,7 @@ import com.riyadmondol2006.taskfern.data.prefs.SettingsRepository
 import com.riyadmondol2006.taskfern.data.repo.CompletionUndo
 import com.riyadmondol2006.taskfern.data.repo.TaskDraft
 import com.riyadmondol2006.taskfern.data.repo.TaskRepository
+import com.riyadmondol2006.taskfern.domain.Streak
 import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule
 import com.riyadmondol2006.taskfern.reminders.ReminderScheduler
 import kotlinx.coroutines.CoroutineScope
@@ -76,6 +77,7 @@ class TaskEditorViewModel(
     val subtasks: StateFlow<List<SubtaskEntity>> = tasks.observeDetails(taskId).map { d -> d?.subtasks?.sortedWith(compareBy({ it.position }, { it.id })) ?: emptyList() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val log: StateFlow<List<OccurrenceLogEntity>> = tasks.observeLog(taskId).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val streak: StateFlow<Streak> = tasks.observeStreak(taskId).stateIn(viewModelScope, SharingStarted.Eagerly, Streak.NONE)
     val lists: StateFlow<List<TaskListEntity>> = tasks.observeLists().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val allTags: StateFlow<List<String>> = tasks.observeTags().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val settings: StateFlow<Settings> = settingsRepo.settings.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())

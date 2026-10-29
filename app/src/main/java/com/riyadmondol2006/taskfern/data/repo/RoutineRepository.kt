@@ -5,7 +5,14 @@ import com.riyadmondol2006.taskfern.data.db.RoutineCheckEntity
 import com.riyadmondol2006.taskfern.data.db.RoutineEntity
 import com.riyadmondol2006.taskfern.data.db.RoutineStepEntity
 import com.riyadmondol2006.taskfern.data.db.TaskfernDatabase
+import com.riyadmondol2006.taskfern.domain.RoutineHistory
+import com.riyadmondol2006.taskfern.domain.Streak
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import java.time.LocalDate
 
 /** A step as edited in the routine editor; [id] is 0 for new steps. */
@@ -135,7 +142,39 @@ class RoutineRepository(
 
     suspend fun setNextReminderAt(id: Long, at: Long?) = dao.setNextReminderAt(id, at)
 
+    /**
+     * Current and best streak (fully completed scheduled days in a row) of every routine, over the last year.
+     * Today counts once all its steps are ticked; an unfinished today does not break the streak.
+     */
+    fun observeRoutineStreaks(today: LocalDate): Flow<Map<Long, Streak>> = combine(
+        dao.observeRoutines(),
+        dao.observeAllSteps(),
+        dao.observeProgressBetween(today.minusDays(STREAK_LOOKBACK_DAYS), today),
+    ) { routines, steps, progress ->
+        val totals = steps.groupingBy { it.routineId }.eachCount()
+        val doneByRoutine = progress.groupBy { it.routineId }.mapValues { (_, rows) -> rows.associate { it.date to it.done } }
+        routines.associate { r -> r.id to streakOf(r, totals[r.id] ?: 0, doneByRoutine[r.id].orEmpty(), today) }
+    }
+
+    /** Streak for one routine right now (widgets read this once per update). */
+    suspend fun streakNow(routine: RoutineEntity, today: LocalDate): Streak {
+        val total = dao.getSteps(routine.id).size
+        val done = dao.observeProgressBetween(today.minusDays(STREAK_LOOKBACK_DAYS), today).first()
+            .filter { it.routineId == routine.id }.associate { it.date to it.done }
+        return streakOf(routine, total, done, today)
+    }
+
+    private fun streakOf(r: RoutineEntity, total: Int, done: Map<LocalDate, Int>, today: LocalDate): Streak {
+        val start = Instant.ofEpochMilli(r.createdAt).atZone(ZoneId.systemDefault()).toLocalDate()
+        return Streak(
+            current = RoutineHistory.currentStreak(today, r.weekdays, done, total, start, STREAK_LOOKBACK_DAYS.toInt()),
+            best = RoutineHistory.bestStreak(today.minusDays(STREAK_LOOKBACK_DAYS), today, r.weekdays, done, total, start),
+        )
+    }
+
     companion object {
+        const val STREAK_LOOKBACK_DAYS = 370L
+
         fun runsOn(routine: RoutineEntity, date: LocalDate): Boolean =
             routine.weekdays and (1 shl (date.dayOfWeek.value - 1)) != 0
     }

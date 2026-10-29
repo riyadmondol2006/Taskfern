@@ -38,6 +38,7 @@ import com.riyadmondol2006.taskfern.data.db.TaskListEntity
 import com.riyadmondol2006.taskfern.data.db.TaskRow
 import com.riyadmondol2006.taskfern.data.repo.CompletionUndo
 import com.riyadmondol2006.taskfern.data.repo.TaskRepository
+import com.riyadmondol2006.taskfern.domain.Streak
 import com.riyadmondol2006.taskfern.ui.common.DatePickerSheet
 import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.LocalSnackbarHost
@@ -75,6 +76,9 @@ open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel
     val selection: StateFlow<Set<Long>> = _selection.asStateFlow()
 
     val lists: StateFlow<List<TaskListEntity>> = tasks.observeLists().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Streaks of repeating tasks, shown on their rows. */
+    val streaks: StateFlow<Map<Long, Streak>> = tasks.observeTaskStreaks().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     fun toggle(row: TaskRow) {
         viewModelScope.launch {

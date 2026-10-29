@@ -39,8 +39,11 @@ reminders = []
 next_id = {"task": 1, "sub": 1, "rem": 1}
 
 
+occurrence_log = []
+
+
 def task(title, list_id=None, due=None, time=None, priority=0, notes="", tags=(), rec=None, rems=(), subs=(),
-         completed_at=None, pinned=False, created=-7):
+         completed_at=None, pinned=False, created=-7, history=()):
     tid = next_id["task"]
     next_id["task"] += 1
     t = {
@@ -51,7 +54,12 @@ def task(title, list_id=None, due=None, time=None, priority=0, notes="", tags=()
     }
     if rec:
         t["recurrence"] = rec
-        t["seriesAnchor"] = day(due if due is not None else 0)
+        # The series started at its first logged occurrence, so a history of on-time completions forms a streak.
+        t["seriesAnchor"] = day(min(list(history) + [due if due is not None else 0]))
+        t["occurrenceCount"] = len(history)
+    for offset in history:
+        occurrence_log.append({"id": len(occurrence_log) + 1, "taskId": tid, "occurrenceDate": day(offset),
+                               "action": "completed", "at": ms(offset, 19)})
     tasks.append(t)
     for offset in rems:
         reminders.append({"id": next_id["rem"], "taskId": tid, "offsetMinutes": offset})
@@ -69,7 +77,10 @@ task("Prepare quarterly report", 1, due=0, time="14:00", priority=3, tags=["q4"]
 task("Team stand-up notes", 1, due=0, time="09:30", rems=[0])
 task("Pick up dry cleaning", 3, due=0, priority=1)
 task("Call Mum", 2, due=0, time="18:30", rems=[0],
-     rec={"frequency": "WEEKLY", "interval": 1, "weekdays": [WEEKDAYS[today.weekday()]]})
+     rec={"frequency": "WEEKLY", "interval": 1, "weekdays": [WEEKDAYS[today.weekday()]]},
+     history=[-42, -35, -28, -21, -14, -7])
+task("Take vitamins", 4, due=0, time="08:00", rec={"frequency": "DAILY", "interval": 1},
+     history=list(range(-9, 0)))
 task("Water the plants", 2, due=0, rec={"frequency": "DAILY", "interval": 3, "fromCompletion": True})
 # Upcoming
 task("Dentist appointment", 4, due=1, time="10:00", priority=2, rems=[60, 1440], notes="Dr. Okafor, 2nd floor.")
@@ -174,7 +185,7 @@ focus = [
 backup = {
     "format": "taskfern-backup", "version": 1, "exportedAt": ms(0, 6), "appVersion": "demo",
     "settings": {"userName": "Alex", "showShoppingPrices": True, "currencySymbol": "€"},
-    "taskLists": lists, "tasks": tasks, "subtasks": subtasks, "reminders": reminders, "occurrenceLog": [],
+    "taskLists": lists, "tasks": tasks, "subtasks": subtasks, "reminders": reminders, "occurrenceLog": occurrence_log,
     "shoppingLists": shopping_lists, "shoppingItems": items, "itemMemory": memory,
     "routines": routines, "routineSteps": steps, "routineChecks": checks, "templates": templates,
     "focusSessions": focus,

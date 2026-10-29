@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.routines
 
+import com.riyadmondol2006.taskfern.domain.WeekdayMask
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -98,7 +99,13 @@ import java.time.LocalDate
 
 data class StepState(val step: RoutineStepEntity, val checked: Boolean)
 
-data class RoutineCard(val routine: RoutineEntity, val steps: List<StepState>, val runsToday: Boolean) {
+data class RoutineCard(
+    val routine: RoutineEntity,
+    val steps: List<StepState>,
+    val runsToday: Boolean,
+    /** Fully completed scheduled days in a row. */
+    val streak: Int = 0,
+) {
     val total: Int get() = steps.size
     val done: Int get() = steps.count { it.checked }
     val complete: Boolean get() = total > 0 && done >= total
@@ -126,9 +133,9 @@ class RoutinesViewModel(
     val state: StateFlow<RoutinesUiState> = combine(
         routines.observeRoutines(),
         routines.observeAllSteps(),
-        date.flatMapLatest { d -> routines.observeChecksOn(d).map { d to it } },
+        date.flatMapLatest { d -> combine(routines.observeChecksOn(d), routines.observeRoutineStreaks(d)) { c, s -> Triple(d, c, s) } },
         settings.settings,
-    ) { all, steps, (today, checks), prefs ->
+    ) { all, steps, (today, checks, streaks), prefs ->
         val checked = checks.map { it.stepId }.toSet()
         val stepsByRoutine = steps.groupBy { it.routineId }
         val cards = all.map { r ->
@@ -136,6 +143,7 @@ class RoutinesViewModel(
                 routine = r,
                 steps = stepsByRoutine[r.id].orEmpty().map { StepState(it, it.id in checked) },
                 runsToday = RoutineRepository.runsOn(r, today),
+                streak = streaks[r.id]?.current ?: 0,
             )
         }
         RoutinesUiState(
@@ -366,7 +374,16 @@ private fun TodayRoutineCard(
                 RoutineBadge(card.routine.emoji, card.progress, color, size = 52.dp, stroke = 4.dp)
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(card.routine.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            card.routine.name, style = MaterialTheme.typography.titleMedium, maxLines = 1,
+                            overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (card.streak >= 2) {
+                            Spacer(Modifier.width(8.dp))
+                            com.riyadmondol2006.taskfern.ui.common.StreakChip(card.streak)
+                        }
+                    }
                     val status = when {
                         card.total == 0 -> stringResource(R.string.routines_no_steps)
                         card.complete -> stringResource(R.string.routines_done_today)
@@ -450,7 +467,16 @@ private fun CompactRoutineCard(card: RoutineCard, subtitle: String, onOpen: () -
             RoutineBadge(card.routine.emoji, card.progress, color, size = 44.dp, stroke = 3.dp)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(card.routine.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        card.routine.name, style = MaterialTheme.typography.titleSmall, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (card.streak >= 2) {
+                        Spacer(Modifier.width(8.dp))
+                        com.riyadmondol2006.taskfern.ui.common.StreakChip(card.streak)
+                    }
+                }
                 Text(
                     subtitle,
                     style = MaterialTheme.typography.bodySmall,

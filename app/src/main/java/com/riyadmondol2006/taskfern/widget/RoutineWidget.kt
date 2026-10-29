@@ -72,7 +72,7 @@ private fun statusLine(context: Context, model: RoutineModel.Showing): String = 
         model.total == 0 -> context.getString(R.string.widget_routine_no_steps)
         model.allDone -> context.getString(R.string.widget_routine_all_done)
         else -> context.resources.getQuantityString(R.plurals.widget_routine_progress, model.total, model.done, model.total)
-    }
+    } + if (model.streak >= 2) " · 🔥 " + context.resources.getQuantityString(R.plurals.streak_days, model.streak, model.streak) else ""
 }
 
 @Composable

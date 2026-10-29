@@ -23,4 +23,8 @@
     <string name="insights_recent">Recently completed</string>
     <string name="insights_recent_empty_title">Nothing completed yet</string>
     <string name="insights_recent_empty">Tasks you complete will show up here.</string>
+    <string name="insights_streaks">Streaks</string>
+    <string name="insights_streaks_empty">Complete a routine or a repeating task on its days in a row and its streak shows up here.</string>
+    <string name="insights_streak_routine">Routine</string>
+    <string name="insights_streak_habit">Repeating task</string>
 </resources>

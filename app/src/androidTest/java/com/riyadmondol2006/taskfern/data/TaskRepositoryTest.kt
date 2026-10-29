@@ -170,4 +170,38 @@ class TaskRepositoryTest {
         assertTrue(due.isNotEmpty())
         assertTrue("Loading 3000 tasks took $ms ms", ms < 1500)
     }
+
+    @Test fun streakCountsDaysInARowAndBreaksOnAMiss() = runBlocking<Unit> {
+        fun repoOn(day: LocalDate) = TaskRepository(db, clock = Clock.fixed(day.atTime(20, 0).atZone(zone).toInstant(), zone))
+        val start = today.minusDays(5)
+        val id = repoOn(start).create(TaskDraft(title = "Floss", dueDate = start, recurrence = RecurrenceRule.daily()))
+        // Done on time three days running.
+        for (offset in 0L..2L) repoOn(start.plusDays(offset)).complete(id)
+        assertEquals(3, repoOn(start.plusDays(3)).observeTaskStreaks().first()[id]?.current)
+        // Day 3 and 4 missed; on day 5 (today) it is overdue, so the current streak is gone but the best stays.
+        val s = repo.observeStreak(id).first()
+        assertEquals(0, s.current)
+        assertEquals(3, s.best)
+        // Finishing the overdue occurrence late counts for it, but the days it skipped still break the run…
+        repo.complete(id)
+        assertEquals(0, repo.observeStreak(id).first().current)
+        // …and the next on-time completion starts a new streak of one.
+        repoOn(today.plusDays(1)).complete(id)
+        assertEquals(1, repoOn(today.plusDays(1)).observeStreak(id).first().current)
+    }
+
+    @Test fun routineStreakFollowsCompletedDays() = runBlocking<Unit> {
+        val routines = com.riyadmondol2006.taskfern.data.repo.RoutineRepository(
+            db, clock = Clock.fixed(today.minusDays(10).atStartOfDay(zone).toInstant(), zone),
+        )
+        val rid = routines.create(com.riyadmondol2006.taskfern.data.repo.RoutineDraft(
+            name = "Morning", steps = listOf(com.riyadmondol2006.taskfern.data.repo.StepDraft(title = "Water"), com.riyadmondol2006.taskfern.data.repo.StepDraft(title = "Stretch")),
+        ))
+        val steps = routines.getSteps(rid)
+        for (back in 1L..4L) steps.forEach { routines.setStepChecked(it.id, rid, today.minusDays(back), true) }
+        routines.setStepChecked(steps.first().id, rid, today, true) // today half done: streak still alive
+        assertEquals(4, routines.observeRoutineStreaks(today).first()[rid]?.current)
+        steps.drop(1).forEach { routines.setStepChecked(it.id, rid, today, true) }
+        assertEquals(5, routines.observeRoutineStreaks(today).first()[rid]?.current)
+    }
 }

@@ -242,6 +242,22 @@ interface TaskDao {
     @Query("SELECT * FROM occurrence_log WHERE task_id = :taskId ORDER BY at DESC LIMIT 60")
     fun observeLog(taskId: Long): Flow<List<OccurrenceLogEntity>>
 
+    // ---- Streaks -----------------------------------------------------------------------------------------------------
+
+    @Query("SELECT * FROM tasks t WHERE $OPEN AND t.rec_frequency IS NOT NULL")
+    fun observeOpenRecurring(): Flow<List<TaskEntity>>
+
+    /** History of every open series, oldest first, for streaks. Indexed by task_id; bounded by real use. */
+    @Query(
+        """SELECT l.* FROM occurrence_log l JOIN tasks t ON t.id = l.task_id
+        WHERE t.deleted_at IS NULL AND t.archived = 0 AND t.is_completed = 0 AND t.rec_frequency IS NOT NULL
+        ORDER BY l.task_id, l.occurrence_date""",
+    )
+    fun observeOpenSeriesLogs(): Flow<List<OccurrenceLogEntity>>
+
+    @Query("SELECT * FROM occurrence_log WHERE task_id = :taskId ORDER BY occurrence_date")
+    fun observeFullLog(taskId: Long): Flow<List<OccurrenceLogEntity>>
+
     // ---- Backup: whole-table export, explicit-id import and clearing (used by the backup package) -------------------
 
     @Query("SELECT * FROM tasks ORDER BY id")

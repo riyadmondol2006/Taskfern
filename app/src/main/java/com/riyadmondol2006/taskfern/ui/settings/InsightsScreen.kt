@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -69,7 +70,11 @@ data class InsightsState(
     val routines: RoutineWeek,
     val focusMinutes: Long,
     val recent: List<TaskRow>,
+    val streaks: List<StreakEntry> = emptyList(),
 )
+
+/** A routine or repeating task with its streak, for the Streaks list. */
+data class StreakEntry(val id: Long, val isRoutine: Boolean, val name: String, val emoji: String, val current: Int, val best: Int)
 
 class InsightsViewModel(c: AppContainer) : ViewModel() {
     val state = c.settings.settings.map { it.weekStartsMonday }.distinctUntilChanged().flatMapLatest { monday ->
@@ -84,14 +89,22 @@ class InsightsViewModel(c: AppContainer) : ViewModel() {
         ) { routines, steps, progress ->
             InsightsMath.routineWeek(routines, steps.groupingBy { it.routineId }.eachCount(), progress, week, today, zone)
         }
-        val counts = combine(c.tasks.observeOverdueCount(today), c.tasks.observeOpenCount()) { overdue, open -> overdue to open }
+        val streaks = combine(c.routines.observeRoutines(), c.routines.observeRoutineStreaks(today), c.tasks.observeHabits()) { rs, rStreaks, habits ->
+            val routineEntries = rs.filter { !it.paused }.mapNotNull { r ->
+                val s = rStreaks[r.id] ?: return@mapNotNull null
+                StreakEntry(r.id, true, r.name, r.emoji, s.current, s.best).takeIf { s.best > 0 }
+            }
+            val habitEntries = habits.map { (t, s) -> StreakEntry(t.id, false, t.title, "", s.current, s.best) }
+            (routineEntries + habitEntries).sortedWith(compareByDescending<StreakEntry> { it.current }.thenByDescending { it.best }).take(10)
+        }
+        val counts = combine(c.tasks.observeOverdueCount(today), c.tasks.observeOpenCount(), streaks) { overdue, open, st -> Triple(overdue, open, st) }
         combine(
             c.tasks.observeCompletionTimesSince(since),
             counts,
             routineWeek,
             c.focusRepository.observeFocusedSecondsSince(since),
             c.tasks.observeCompleted(10),
-        ) { times, (overdue, open), routines, focusSeconds, recent ->
+        ) { times, (overdue, open, streakEntries), routines, focusSeconds, recent ->
             InsightsState(
                 today = today,
                 week = week,
@@ -102,6 +115,7 @@ class InsightsViewModel(c: AppContainer) : ViewModel() {
                 routines = routines,
                 focusMinutes = InsightsMath.focusMinutes(focusSeconds),
                 recent = recent,
+                streaks = streakEntries,
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -161,6 +175,28 @@ fun InsightsScreen(nav: AppNavigator) {
             }
             item {
                 Text(
+                    stringResource(R.string.insights_streaks),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                )
+            }
+            if (s.streaks.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.insights_streaks_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                }
+            } else {
+                items(s.streaks, key = { (if (it.isRoutine) "r" else "t") + it.id }) { e ->
+                    StreakRow(e, onClick = { if (e.isRoutine) nav.openRoutine(e.id) else nav.openTask(e.id) })
+                }
+            }
+            item {
+                Text(
                     stringResource(R.string.insights_recent),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
@@ -177,6 +213,29 @@ fun InsightsScreen(nav: AppNavigator) {
             } else {
                 items(s.recent, key = { it.task.id }) { row -> RecentRow(row, s.today, onClick = { nav.openTask(row.task.id) }) }
             }
+        }
+    }
+}
+
+@Composable
+private fun StreakRow(e: StreakEntry, onClick: () -> Unit) {
+    Surface(onClick = onClick, shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerLow) {
+        androidx.compose.foundation.layout.Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            Text(e.emoji.ifEmpty { "🔁" }, style = MaterialTheme.typography.titleMedium)
+            androidx.compose.foundation.layout.Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(e.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(
+                    stringResource(if (e.isRoutine) R.string.insights_streak_routine else R.string.insights_streak_habit) + " · " +
+                        stringResource(R.string.streak_best, e.best),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (e.current > 0) com.riyadmondol2006.taskfern.ui.common.StreakChip(e.current)
+            else Text("—", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

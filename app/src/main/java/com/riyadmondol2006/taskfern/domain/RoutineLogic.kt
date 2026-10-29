@@ -1,4 +1,4 @@
-package com.riyadmondol2006.taskfern.ui.routines
+package com.riyadmondol2006.taskfern.domain
 
 import java.text.BreakIterator
 import java.time.DayOfWeek

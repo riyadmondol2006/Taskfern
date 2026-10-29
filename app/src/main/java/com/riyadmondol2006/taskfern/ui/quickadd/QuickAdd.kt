@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
@@ -168,6 +169,7 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     var listId by rememberSaveable { mutableStateOf(defaults.listId) }
     var reminderOn by rememberSaveable { mutableStateOf<Boolean?>(null) } // null = follow the setting
     var smartParsing by rememberSaveable { mutableStateOf(true) }
+    var repeatDropped by rememberSaveable { mutableStateOf(false) }
     var addedCount by rememberSaveable { mutableIntStateOf(0) }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -183,6 +185,7 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     val effTime = time ?: parsed.time
     val effPriority = if (priority != 0) priority else parsed.priority ?: 0
     val effReminder = (reminderOn ?: settings.autoReminder) && effDate != null
+    val effRepeat = if (repeatDropped) null else parsed.recurrence
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -204,12 +207,14 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
                 dueDate = effDate,
                 dueTime = effTime,
                 tags = parsed.tags,
+                recurrence = effRepeat,
                 reminderOffsets = if (effReminder) listOf(0) else emptyList(),
             ),
         ) {
             addedCount++
         }
         text = ""
+        repeatDropped = false
         time = null
         priority = 0
         reminderOn = null
@@ -291,6 +296,21 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
                         date = null; time = null; dateCleared = true; dateMenu = false
                     })
                 }
+            }
+            // Repeat (from phrases like "every monday"); tapping drops the rule for this entry.
+            if (effRepeat != null || (repeatDropped && parsed.recurrence != null)) {
+                FilterChip(
+                    selected = effRepeat != null,
+                    onClick = { repeatDropped = !repeatDropped },
+                    label = {
+                        Text(
+                            parsed.recurrence?.let { com.riyadmondol2006.taskfern.ui.editor.RecurrenceText.describe(context, it, effDate) }
+                                ?: stringResource(R.string.repeat_none),
+                            maxLines = 1,
+                        )
+                    },
+                    leadingIcon = { Icon(Icons.Outlined.Repeat, null, Modifier.size(18.dp)) },
+                )
             }
             // Time
             FilterChip(

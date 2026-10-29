@@ -68,6 +68,6 @@ internal object WidgetData {
         val target = WidgetModels.resolveTarget(configured, all.map { it.id })
         val routine = all.firstOrNull { it.id == target.id } ?: return RoutineModel.NoRoutines
         val steps = routines.getStepsWithChecks(routine.id, today)
-        return WidgetModels.routine(routine, steps, today, target.configuredMissing)
+        return WidgetModels.routine(routine, steps, today, target.configuredMissing, routines.streakNow(routine, today).current)
     }
 }

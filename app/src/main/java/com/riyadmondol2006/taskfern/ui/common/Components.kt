@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.PauseCircle
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Repeat
@@ -59,6 +60,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -189,6 +191,8 @@ fun TaskItem(
     onLongClick: (() -> Unit)? = null,
     onSwipeComplete: (() -> Unit)? = null,
     onSwipeDelete: (() -> Unit)? = null,
+    /** Completed occurrences in a row for a repeating task; shown from 2 up. */
+    streak: Int = 0,
 ) {
     val t = row.task
     val context = LocalContext.current
@@ -243,6 +247,7 @@ fun TaskItem(
                             }
                             if (paused) MetaChip(Icons.Outlined.PauseCircle, stringResource(R.string.paused), muted)
                             else if (t.isRecurring) MetaChip(Icons.Outlined.Repeat, null, muted)
+                            if (streak >= 2 && !t.isCompleted) StreakChip(streak)
                             if (row.reminderCount > 0 && !t.isCompleted) MetaChip(Icons.Outlined.Alarm, null, muted)
                             if (row.subtaskTotal > 0) MetaChip(Icons.Outlined.Checklist, "${row.subtaskDone}/${row.subtaskTotal}", muted)
                             if (t.notes.isNotBlank()) MetaChip(Icons.AutoMirrored.Outlined.Notes, null, muted)
@@ -300,6 +305,20 @@ fun TaskItem(
             }
         },
     ) { content() }
+}
+
+/** "🔥 6" — a run of completed days or occurrences. Read out as "6 in a row". */
+@Composable
+fun StreakChip(count: Int, modifier: Modifier = Modifier) {
+    val label = pluralStringResource(R.plurals.streak_in_a_row, count, count)
+    Row(
+        modifier.semantics(mergeDescendants = true) { contentDescription = label },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Outlined.LocalFireDepartment, null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
+        Spacer(Modifier.width(2.dp))
+        Text(count.toString(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary, maxLines = 1)
+    }
 }
 
 @Composable

@@ -193,6 +193,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
     val selection by vm.selection.collectAsStateWithLifecycle()
     val lists by vm.lists.collectAsStateWithLifecycle()
     val reorder by vm.reorderMode.collectAsStateWithLifecycle()
+    val streaks by vm.streaks.collectAsStateWithLifecycle()
     TaskEventsEffect(vm)
 
     val title = when {
@@ -343,6 +344,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
                             onLongClick = if (vm.isOpenMode) ({ vm.toggleSelection(row.task.id) }) else null,
                             onSwipeComplete = if (vm.isOpenMode) ({ vm.toggle(row) }) else null,
                             onSwipeDelete = { vm.delete(listOf(row.task.id)) },
+                            streak = streaks[row.task.id]?.current ?: 0,
                         )
                     }
                 }

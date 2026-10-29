@@ -1,5 +1,8 @@
 package com.riyadmondol2006.taskfern.ui.routines
 
+import com.riyadmondol2006.taskfern.domain.WeekdayMask
+import com.riyadmondol2006.taskfern.domain.HistoryDay
+import com.riyadmondol2006.taskfern.domain.RoutineHistory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

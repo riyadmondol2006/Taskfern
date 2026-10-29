@@ -31,4 +31,8 @@
     <string name="today_notifications_fix">Fix</string>
     <string name="action_expand">Expand</string>
     <string name="action_collapse">Collapse</string>
+    <plurals name="today_keep_streak">
+        <item quantity="one">%1$d step to keep your %2$d-day streak</item>
+        <item quantity="other">%1$d steps to keep your %2$d-day streak</item>
+    </plurals>
 </resources>

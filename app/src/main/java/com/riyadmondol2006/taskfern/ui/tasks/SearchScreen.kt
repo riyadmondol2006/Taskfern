@@ -73,6 +73,7 @@ fun SearchScreen(nav: AppNavigator) {
     val results by vm.results.collectAsStateWithLifecycle()
     val recent by vm.recentTitles.collectAsStateWithLifecycle()
     val tags by vm.tags.collectAsStateWithLifecycle()
+    val streaks by vm.streaks.collectAsStateWithLifecycle()
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     TaskEventsEffect(vm)
@@ -144,6 +145,7 @@ fun SearchScreen(nav: AppNavigator) {
                         row,
                         onToggle = { vm.toggle(row) },
                         onClick = { nav.openTask(row.task.id) },
+                        streak = streaks[row.task.id]?.current ?: 0,
                     )
                 }
             }

@@ -87,4 +87,45 @@ class QuickAddParserTest {
         assertEquals(LocalTime.MIDNIGHT, parse("Thing 12am").time)
         assertEquals(LocalTime.NOON, parse("Lunch 12pm").time)
     }
+
+    // ---- Repeats -----------------------------------------------------------------------------------------------------
+
+    @Test fun `every day and daily`() {
+        val r = parse("Stretch every day")
+        assertEquals("Stretch", r.title)
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.daily(), r.recurrence)
+        assertEquals(thursday, r.date)
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.daily(), parse("Vitamins daily").recurrence)
+    }
+
+    @Test fun `every monday and thursday starts on the next matching day`() {
+        val r = parse("Gym every monday and thursday at 7am")
+        assertEquals("Gym", r.title)
+        assertEquals(java.time.LocalTime.of(7, 0), r.time)
+        assertEquals(
+            com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.weekly(1, java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.THURSDAY),
+            r.recurrence,
+        )
+        assertEquals(thursday, r.date) // today is a Thursday
+        assertEquals(LocalDate.of(2026, 11, 2), parse("Swim every monday").date)
+    }
+
+    @Test fun `intervals and other`() {
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.daily(3), parse("Water plants every 3 days").recurrence)
+        assertEquals(
+            com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule(com.riyadmondol2006.taskfern.domain.recurrence.Frequency.WEEKLY, 2),
+            parse("Clean fridge every other week").recurrence,
+        )
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.monthly(), parse("Pay rent monthly").recurrence)
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.yearly(), parse("Renew passport annually").recurrence)
+        assertEquals(com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule.weekdays(), parse("Standup every weekday 9:30").recurrence)
+        assertEquals("Standup", parse("Standup every weekday 9:30").title)
+    }
+
+    @Test fun `words that only look like repeats are left alone`() {
+        assertNull(parse("Read every chapter").recurrence)
+        assertNull(parse("Everyday carry list").recurrence)
+        assertNull(parse("Dailymotion upload").recurrence)
+        assertEquals("Read every chapter", parse("Read every chapter").title)
+    }
 }

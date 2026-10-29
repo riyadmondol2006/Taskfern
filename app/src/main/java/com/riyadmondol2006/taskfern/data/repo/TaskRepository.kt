@@ -12,7 +12,11 @@ import com.riyadmondol2006.taskfern.data.db.TaskWithDetails
 import com.riyadmondol2006.taskfern.data.db.TaskfernDatabase
 import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceEngine
 import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule
+import com.riyadmondol2006.taskfern.domain.OccurrenceRecord
+import com.riyadmondol2006.taskfern.domain.Streak
+import com.riyadmondol2006.taskfern.domain.TaskStreaks
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
@@ -76,6 +80,39 @@ class TaskRepository(
     fun observeCompletionTimesSince(since: Long) = dao.observeCompletionTimesSince(since)
     fun observeOverdueCount(today: LocalDate) = dao.observeOverdueCount(today)
     fun observeOpenCount() = dao.observeOpenCount()
+
+    /** Current and best streak of every open repeating task that has a history, keyed by task id. */
+    fun observeTaskStreaks(): Flow<Map<Long, Streak>> = observeHabits().map { list -> list.associate { it.first.id to it.second } }
+
+    /** Open repeating tasks with a history, paired with their streak. */
+    fun observeHabits(): Flow<List<Pair<TaskEntity, Streak>>> =
+        combine(dao.observeOpenRecurring(), dao.observeOpenSeriesLogs()) { series, logs ->
+            val today = today()
+            val byTask = logs.groupBy { it.taskId }
+            series.mapNotNull { t ->
+                val rule = t.recurrence ?: return@mapNotNull null
+                val log = byTask[t.id] ?: return@mapNotNull null
+                val streak = TaskStreaks.compute(
+                    rule, t.seriesAnchor ?: t.dueDate ?: today,
+                    log.map { OccurrenceRecord(it.occurrenceDate, it.action) }, t.dueDate, today,
+                )
+                (t to streak).takeIf { streak.best > 0 }
+            }
+        }
+
+    fun observeStreak(taskId: Long): Flow<Streak> =
+        combine(dao.observeDetails(taskId), dao.observeFullLog(taskId)) { details, log ->
+            val t = details?.task
+            val rule = t?.recurrence
+            if (t == null || rule == null) Streak.NONE
+            else TaskStreaks.compute(
+                rule, t.seriesAnchor ?: t.dueDate ?: today(),
+                log.map { OccurrenceRecord(it.occurrenceDate, it.action) }, t.dueDate, today(),
+            )
+        }
+
+    /** The series' log, oldest first (for the history dots in the editor). */
+    fun observeFullLog(taskId: Long) = dao.observeFullLog(taskId)
 
     fun observeTags(): Flow<List<String>> = dao.observeTagColumns().map { columns ->
         columns.flatMap(TaskEntity::tagsFromColumn).distinct().sorted()

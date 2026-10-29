@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -86,6 +87,7 @@ fun TodayScreen(nav: AppNavigator) {
     val state by vm.state.collectAsStateWithLifecycle()
     val selection by vm.selection.collectAsStateWithLifecycle()
     val lists by vm.lists.collectAsStateWithLifecycle()
+    val streaks by vm.streaks.collectAsStateWithLifecycle()
     val context = LocalContext.current
     TaskEventsEffect(vm)
 
@@ -165,7 +167,7 @@ fun TodayScreen(nav: AppNavigator) {
                         },
                     )
                 }
-                items(state.overdue, key = { "o${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection) }
+                items(state.overdue, key = { "o${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection, streaks[row.task.id]?.current ?: 0) }
             }
 
             item(key = "today-h") {
@@ -188,7 +190,7 @@ fun TodayScreen(nav: AppNavigator) {
                     )
                 }
             }
-            items(state.dueToday, key = { "t${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection) }
+            items(state.dueToday, key = { "t${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection, streaks[row.task.id]?.current ?: 0) }
 
             if (state.routines.isNotEmpty()) {
                 item(key = "routines-h") {
@@ -214,7 +216,7 @@ fun TodayScreen(nav: AppNavigator) {
                         TextButton(onClick = { nav.openTaskList(SmartViewKey.IMPORTANT) }) { Text(stringResource(R.string.today_see_all)) }
                     })
                 }
-                items(state.important, key = { "i${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection) }
+                items(state.important, key = { "i${it.task.id}" }) { row -> TodayTask(row, vm, nav, selection, streaks[row.task.id]?.current ?: 0) }
             }
 
             if (state.showCompleted && state.completedToday.isNotEmpty()) {
@@ -248,7 +250,7 @@ fun TodayScreen(nav: AppNavigator) {
 }
 
 @Composable
-private fun TodayTask(row: TaskRow, vm: TodayViewModel, nav: AppNavigator, selection: Set<Long>) {
+private fun TodayTask(row: TaskRow, vm: TodayViewModel, nav: AppNavigator, selection: Set<Long>, streak: Int) {
     val selecting = selection.isNotEmpty()
     TaskItem(
         row = row,
@@ -259,6 +261,7 @@ private fun TodayTask(row: TaskRow, vm: TodayViewModel, nav: AppNavigator, selec
         onLongClick = { vm.toggleSelection(row.task.id) },
         onSwipeComplete = { vm.toggle(row) },
         onSwipeDelete = { vm.delete(listOf(row.task.id)) },
+        streak = streak,
     )
 }
 
@@ -335,13 +338,14 @@ private fun TodayHeader(state: TodayState) {
 
 @Composable
 private fun RoutineChip(r: RoutineSummary, onClick: () -> Unit) {
+    val streakText = pluralStringResource(R.plurals.streak_days, r.streak, r.streak)
     val fraction = if (r.total == 0) 0f else r.done.toFloat() / r.total
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.widthIn(min = 150.dp, max = 220.dp).semantics(mergeDescendants = true) {
-            contentDescription = "${r.name}, ${r.done} / ${r.total}"
+            contentDescription = "${r.name}, ${r.done} / ${r.total}" + if (r.streak >= 2) ", $streakText" else ""
         },
     ) {
         Column(Modifier.padding(14.dp)) {
@@ -357,11 +361,25 @@ private fun RoutineChip(r: RoutineSummary, onClick: () -> Unit) {
                 drawStopIndicator = {},
             )
             Spacer(Modifier.height(6.dp))
-            Text(
-                if (r.done == r.total && r.total > 0) stringResource(R.string.today_routine_done) else "${r.done} / ${r.total}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (r.done == r.total && r.total > 0) stringResource(R.string.today_routine_done) else "${r.done} / ${r.total}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                if (r.streak >= 2) com.riyadmondol2006.taskfern.ui.common.StreakChip(r.streak)
+            }
+            // A quiet nudge, only when there is a streak worth keeping and steps left today.
+            val left = r.total - r.done
+            if (left > 0 && r.streak >= 2) {
+                Text(
+                    pluralStringResource(R.plurals.today_keep_streak, left, left, r.streak),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    maxLines = 2,
+                )
+            }
         }
     }
 }

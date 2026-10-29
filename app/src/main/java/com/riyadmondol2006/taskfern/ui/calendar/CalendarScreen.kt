@@ -173,6 +173,7 @@ fun CalendarScreen(nav: AppNavigator) {
     val vm = taskfernViewModel { c, _ -> CalendarViewModel(c.tasks, c.settings) }
     val state by vm.state.collectAsStateWithLifecycle()
     val mode by vm.mode.collectAsStateWithLifecycle()
+    val streaks by vm.streaks.collectAsStateWithLifecycle()
     var rescheduling by remember { mutableStateOf<TaskRow?>(null) }
     TaskEventsEffect(vm)
 
@@ -247,6 +248,7 @@ fun CalendarScreen(nav: AppNavigator) {
                     onLongClick = { rescheduling = row },
                     onSwipeComplete = { vm.toggle(row) },
                     onSwipeDelete = { vm.delete(listOf(row.task.id)) },
+                    streak = streaks[row.task.id]?.current ?: 0,
                 )
             }
             items(state.dayProjections, key = { "p${it.task.id}-${it.date}" }) { p ->
