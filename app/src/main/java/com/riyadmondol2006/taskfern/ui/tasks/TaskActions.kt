@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -139,6 +141,7 @@ open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel
 fun TaskEventsEffect(vm: TaskActionsViewModel) {
     val host = LocalSnackbarHost.current
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val undo = stringResource(R.string.action_undo)
     LaunchedEffect(vm) {
@@ -146,22 +149,22 @@ fun TaskEventsEffect(vm: TaskActionsViewModel) {
             when (e) {
                 is TaskEvent.Completed -> scope.showUndo(
                     host,
-                    if (e.nextDue != null) context.getString(R.string.snack_completed_next, Formatters.relativeDay(context, e.nextDue))
-                    else context.getString(R.string.snack_completed, e.title),
+                    if (e.nextDue != null) resources.getString(R.string.snack_completed_next, Formatters.relativeDay(context, e.nextDue))
+                    else resources.getString(R.string.snack_completed, e.title),
                     undo,
                 ) { vm.undoCompletion(e.undo) }
                 is TaskEvent.CompletedMany -> scope.showUndo(
-                    host, context.resources.getQuantityString(R.plurals.snack_completed_many, e.undos.size, e.undos.size), undo,
+                    host, resources.getQuantityString(R.plurals.snack_completed_many, e.undos.size, e.undos.size), undo,
                 ) { vm.undoMany(e.undos) }
                 is TaskEvent.Deleted -> scope.showUndo(
                     host,
-                    if (e.ids.size == 1) context.getString(R.string.snack_deleted)
-                    else context.resources.getQuantityString(R.plurals.snack_deleted_many, e.ids.size, e.ids.size),
+                    if (e.ids.size == 1) resources.getString(R.string.snack_deleted)
+                    else resources.getQuantityString(R.plurals.snack_deleted_many, e.ids.size, e.ids.size),
                     undo,
                 ) { vm.restore(e.ids) }
                 is TaskEvent.Skipped -> scope.showUndo(
                     host,
-                    context.getString(R.string.snack_skipped, e.nextDue?.let { Formatters.relativeDay(context, it) } ?: "—"),
+                    resources.getString(R.string.snack_skipped, e.nextDue?.let { Formatters.relativeDay(context, it) } ?: "—"),
                     undo,
                 ) { vm.undoCompletion(e.undo) }
             }
@@ -178,7 +181,6 @@ fun SelectionTopBar(
     visibleIds: List<Long>,
     selectedPinned: Boolean,
 ) {
-    val context = LocalContext.current
     var priorityMenu by remember { mutableStateOf(false) }
     var moveMenu by remember { mutableStateOf(false) }
     var moreMenu by remember { mutableStateOf(false) }
@@ -188,7 +190,7 @@ fun SelectionTopBar(
         navigationIcon = {
             IconButton(onClick = vm::clearSelection) { Icon(Icons.Outlined.Close, stringResource(R.string.action_close)) }
         },
-        title = { Text(context.resources.getQuantityString(R.plurals.selected_count, selected.size, selected.size)) },
+        title = { Text(pluralStringResource(R.plurals.selected_count, selected.size, selected.size)) },
         actions = {
             IconButton(onClick = vm::completeSelected) { Icon(Icons.Outlined.CheckCircle, stringResource(R.string.action_complete)) }
             IconButton(onClick = { datePicker = true }) { Icon(Icons.Outlined.Event, stringResource(R.string.action_reschedule)) }

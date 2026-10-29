@@ -73,6 +73,10 @@ jobs:
       contents: write
     env:
       APP_ID: com.riyadmondol2006.taskfern
+      # versionName = MAJOR.MINOR.<versionCode>; versionCode = VERSION_CODE_OFFSET + run number (docs/RELEASING.md).
+      TASKFERN_MAJOR: '1'
+      TASKFERN_MINOR: '0'
+      VERSION_CODE_OFFSET: '0'
     steps:
       - uses: actions/checkout@v7
         with:

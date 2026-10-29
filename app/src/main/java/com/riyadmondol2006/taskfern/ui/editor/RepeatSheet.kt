@@ -43,10 +43,10 @@ import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceEngine
 import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule
 import com.riyadmondol2006.taskfern.ui.common.DatePickerSheet
 import com.riyadmondol2006.taskfern.ui.common.Formatters
+import com.riyadmondol2006.taskfern.ui.common.currentLocale
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
-import java.util.Locale
 
 private enum class Preset { DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY, CUSTOM }
 private enum class EndMode { NEVER, DATE, COUNT }
@@ -127,7 +127,7 @@ fun RepeatSheet(
                 PresetChip(stringResource(R.string.repeat_every_day), preset == Preset.DAILY) { preset = Preset.DAILY }
                 PresetChip(stringResource(R.string.repeat_weekdays), preset == Preset.WEEKDAYS) { preset = Preset.WEEKDAYS; fromCompletion = false }
                 PresetChip(
-                    stringResource(R.string.repeat_weekly_on, anchor.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())),
+                    stringResource(R.string.repeat_weekly_on, anchor.dayOfWeek.getDisplayName(TextStyle.FULL, currentLocale())),
                     preset == Preset.WEEKLY,
                 ) { preset = Preset.WEEKLY }
                 PresetChip(stringResource(R.string.repeat_monthly_on, anchor.dayOfMonth), preset == Preset.MONTHLY) { preset = Preset.MONTHLY }
@@ -184,7 +184,7 @@ fun RepeatSheet(
                                     val next = weekdays xor bit
                                     if (next != 0) weekdays = next // at least one day
                                 },
-                                label = { Text(d.getDisplayName(TextStyle.SHORT, Locale.getDefault())) },
+                                label = { Text(d.getDisplayName(TextStyle.SHORT, currentLocale())) },
                             )
                         }
                     }

@@ -11,6 +11,10 @@ import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
+/** The locale of the current configuration, observed by Compose so text updates when the language changes. */
+@androidx.compose.runtime.Composable
+fun currentLocale(): Locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+
 /** Locale-aware, human date and time labels ("Today", "Tomorrow 9:00", "Fri 14 Nov"). */
 object Formatters {
 

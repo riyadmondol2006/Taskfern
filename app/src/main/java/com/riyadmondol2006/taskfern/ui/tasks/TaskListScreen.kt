@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -82,10 +83,16 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+/** What a section of the list is about; the UI turns it into a label. */
+sealed interface SectionKey {
+    data class Day(val date: LocalDate?) : SectionKey
+    data class Bucket(val bucket: TaskFilters.Bucket) : SectionKey
+}
+
 /** Sections of a task list screen, ready to render. */
 data class TaskListState(
     val loaded: Boolean = false,
-    val sections: List<Pair<String?, List<TaskRow>>> = emptyList(),
+    val sections: List<Pair<SectionKey?, List<TaskRow>>> = emptyList(),
     val list: TaskListEntity? = null,
     val sort: TaskSort = TaskSort.SMART,
     val refinement: TaskFilters.Refinement = TaskFilters.Refinement(),
@@ -103,7 +110,6 @@ class TaskListViewModel(
     private val settings: SettingsRepository,
     val view: String,
     val listId: Long,
-    private val labels: (key: String, date: LocalDate?) -> String,
 ) : TaskActionsViewModel(tasks) {
 
     private val mode = when (view) {
@@ -129,7 +135,7 @@ class TaskListViewModel(
     val state: StateFlow<TaskListState> = combine(source, settings.settings, refinement, listFlow, tasks.observeTags()) { rows, s, refine, list, tags ->
         val today = LocalDate.now()
         val sort = if (view == SmartViewKey.RECENT) TaskSort.CREATED else s.taskSort
-        val sections: List<Pair<String?, List<TaskRow>>> = when (mode) {
+        val sections: List<Pair<SectionKey?, List<TaskRow>>> = when (mode) {
             Mode.OPEN -> {
                 val filtered = TaskFilters.refine(
                     TaskFilters.filter(view, rows, today, s.weekStartsMonday, listId, System.currentTimeMillis() - 7L * 24 * 3600 * 1000),
@@ -138,16 +144,16 @@ class TaskListViewModel(
                 val sorted = TaskFilters.sort(filtered, sort)
                 when {
                     view == SmartViewKey.UPCOMING || view == SmartViewKey.THIS_WEEK ->
-                        TaskFilters.groupByDay(sorted).map { (d, r) -> labels("day", d) to r }
+                        TaskFilters.groupByDay(sorted).map { (d, r) -> SectionKey.Day(d) to r }
                     sort == TaskSort.SMART && view in setOf(SmartViewKey.LIST, SmartViewKey.INBOX, SmartViewKey.ALL, SmartViewKey.IMPORTANT) ||
                         view.startsWith(SmartViewKey.TAG_PREFIX) && sort == TaskSort.SMART ->
-                        TaskFilters.groupByBucket(sorted, today, s.weekStartsMonday).map { (b, r) -> labels(b.name, null) to r }
+                        TaskFilters.groupByBucket(sorted, today, s.weekStartsMonday).map { (b, r) -> SectionKey.Bucket(b) to r }
                     else -> listOf(null to sorted)
                 }
             }
             Mode.COMPLETED -> rows.groupBy {
                 Instant.ofEpochMilli(it.task.completedAt ?: 0).atZone(ZoneId.systemDefault()).toLocalDate()
-            }.map { (d, r) -> labels("day", d) to r }
+            }.map { (d, r) -> SectionKey.Day(d) to r }
             else -> listOf(null to rows)
         }
         TaskListState(true, sections.filter { it.second.isNotEmpty() }, list, sort, refine, tags, s.weekStartsMonday)
@@ -182,20 +188,7 @@ class TaskListViewModel(
 
 @Composable
 fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
-    val context = LocalContext.current
-    val vm = taskfernViewModel(key = "$view/$listId") { c, _ ->
-        TaskListViewModel(c.tasks, c.settings, view, listId, { key, date ->
-            when (key) {
-                "day" -> date?.let { Formatters.relativeDay(context, it) } ?: context.getString(R.string.no_date)
-                "OVERDUE" -> context.getString(R.string.overdue)
-                "TODAY" -> context.getString(R.string.today)
-                "TOMORROW" -> context.getString(R.string.tomorrow)
-                "THIS_WEEK" -> context.getString(R.string.tasks_bucket_this_week)
-                "LATER" -> context.getString(R.string.tasks_bucket_later)
-                else -> context.getString(R.string.no_date)
-            }
-        })
-    }
+    val vm = taskfernViewModel(key = "$view/$listId") { c, _ -> TaskListViewModel(c.tasks, c.settings, view, listId) }
     val state by vm.state.collectAsStateWithLifecycle()
     val selection by vm.selection.collectAsStateWithLifecycle()
     val lists by vm.lists.collectAsStateWithLifecycle()
@@ -324,12 +317,14 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
                     )
                 }
             }
-            state.sections.forEach { (header, rows) ->
-                if (header != null) {
-                    item(key = "h-$header") {
+            state.sections.forEach { (key, rows) ->
+                if (key != null) {
+                    item(key = "h-$key") {
+                        val overdue = key == SectionKey.Bucket(TaskFilters.Bucket.OVERDUE) ||
+                            (key is SectionKey.Day && key.date?.isBefore(LocalDate.now()) == true && vm.isOpenMode)
                         SectionHeader(
-                            header, count = rows.size,
-                            color = if (header == stringResource(R.string.overdue)) LocalTaskfernColors.current.overdue else MaterialTheme.colorScheme.primary,
+                            sectionLabel(key), count = rows.size,
+                            color = if (overdue) LocalTaskfernColors.current.overdue else MaterialTheme.colorScheme.primary,
                         )
                     }
                 }
@@ -361,7 +356,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
     if (confirmEmpty) {
         ConfirmDialog(
             title = stringResource(R.string.action_empty_trash),
-            message = context.resources.getQuantityString(R.plurals.tasks_empty_trash_confirm, state.rows.size, state.rows.size),
+            message = pluralStringResource(R.plurals.tasks_empty_trash_confirm, state.rows.size, state.rows.size),
             confirmLabel = stringResource(R.string.action_delete_forever),
             onConfirm = vm::emptyTrash,
             onDismiss = { confirmEmpty = false },
@@ -377,6 +372,21 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
             onDismiss = { deleteList = false },
         )
     }
+}
+
+@Composable
+private fun sectionLabel(key: SectionKey): String = when (key) {
+    is SectionKey.Day -> key.date?.let { Formatters.relativeDay(LocalContext.current, it) } ?: stringResource(R.string.no_date)
+    is SectionKey.Bucket -> stringResource(
+        when (key.bucket) {
+            TaskFilters.Bucket.OVERDUE -> R.string.overdue
+            TaskFilters.Bucket.TODAY -> R.string.today
+            TaskFilters.Bucket.TOMORROW -> R.string.tomorrow
+            TaskFilters.Bucket.THIS_WEEK -> R.string.tasks_bucket_this_week
+            TaskFilters.Bucket.LATER -> R.string.tasks_bucket_later
+            TaskFilters.Bucket.NO_DATE -> R.string.no_date
+        },
+    )
 }
 
 private fun sortLabel(s: TaskSort): Int = when (s) {

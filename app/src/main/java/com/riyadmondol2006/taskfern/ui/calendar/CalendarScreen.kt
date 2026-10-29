@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -69,6 +70,7 @@ import com.riyadmondol2006.taskfern.ui.common.EmptyState
 import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.SectionHeader
 import com.riyadmondol2006.taskfern.ui.common.TaskItem
+import com.riyadmondol2006.taskfern.ui.common.currentLocale
 import com.riyadmondol2006.taskfern.ui.common.taskfernViewModel
 import com.riyadmondol2006.taskfern.ui.navigation.AppNavigator
 import com.riyadmondol2006.taskfern.ui.tasks.TaskActionsViewModel
@@ -86,7 +88,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
-import java.util.Locale
 
 /** A repeating task's future occurrence shown on the calendar (not a real row until it comes due). */
 data class Projection(val task: TaskEntity, val date: LocalDate)
@@ -283,7 +284,7 @@ private fun MonthGrid(state: CalendarState, onSelect: (LocalDate) -> Unit) {
         Row(Modifier.fillMaxWidth()) {
             weekdayHeaders(state.weekStartsMonday).forEach { d ->
                 Text(
-                    d.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                    d.getDisplayName(TextStyle.NARROW, currentLocale()),
                     modifier = Modifier.weight(1f), textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -318,7 +319,7 @@ private fun WeekStrip(state: CalendarState, onSelect: (LocalDate) -> Unit) {
             val date = start.plusDays(i.toLong())
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                    date.dayOfWeek.getDisplayName(TextStyle.SHORT, currentLocale()),
                     style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 DayCell(date, true, date == today, date == state.selected, state.marks[date], Modifier.fillMaxWidth(), onClick = { onSelect(date) }, tall = true)
@@ -338,14 +339,15 @@ private fun DayCell(
     onClick: () -> Unit,
     tall: Boolean = false,
 ) {
-    val context = LocalContext.current
     val primary = MaterialTheme.colorScheme.primary
     val past = date.isBefore(LocalDate.now())
+    val dueCount = marks?.due ?: 0
+    val dueText = pluralStringResource(R.plurals.calendar_tasks_due, dueCount, dueCount)
+    val repeatsText = stringResource(R.string.calendar_repeats_here)
     val desc = buildString {
         append(Formatters.longDate(date))
-        val due = marks?.due ?: 0
-        if (due > 0) append(", ").append(context.resources.getQuantityString(R.plurals.calendar_tasks_due, due, due))
-        if ((marks?.projected ?: 0) > 0) append(", ").append(context.getString(R.string.calendar_repeats_here))
+        if (dueCount > 0) append(", ").append(dueText)
+        if ((marks?.projected ?: 0) > 0) append(", ").append(repeatsText)
     }
     Box(
         modifier

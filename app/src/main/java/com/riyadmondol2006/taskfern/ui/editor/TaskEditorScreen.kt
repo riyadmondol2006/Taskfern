@@ -74,6 +74,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -108,6 +109,7 @@ private val reminderChoices = listOf(0, 10, 30, 60, 120, 24 * 60)
 @Composable
 fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val vm = taskfernViewModel(key = "editor-$taskId") { c, _ ->
         TaskEditorViewModel(c.tasks, c.settings, c.reminders, c.appScope, taskId)
     }
@@ -135,23 +137,23 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
             when (e) {
                 is EditorEvent.Completed -> scope.showUndo(
                     host,
-                    if (e.nextDue != null) context.getString(R.string.snack_completed_next, Formatters.relativeDay(context, e.nextDue))
-                    else context.getString(R.string.snack_completed, draft.title),
+                    if (e.nextDue != null) resources.getString(R.string.snack_completed_next, Formatters.relativeDay(context, e.nextDue))
+                    else resources.getString(R.string.snack_completed, draft.title),
                     undoLabel,
                 ) { vm.undoCompletion(e.undo) }
                 is EditorEvent.Skipped -> scope.showUndo(
-                    host, context.getString(R.string.snack_skipped, e.nextDue?.let { Formatters.relativeDay(context, it) } ?: "—"), undoLabel,
+                    host, resources.getString(R.string.snack_skipped, e.nextDue?.let { Formatters.relativeDay(context, it) } ?: "—"), undoLabel,
                 ) { vm.undoCompletion(e.undo) }
                 EditorEvent.Deleted -> {
                     // Snackbar outlives this screen because the host belongs to the root scaffold.
                     val app = context.applicationContext as TaskfernApp
-                    scope.showUndo(host, context.getString(R.string.snack_deleted), undoLabel) {
+                    scope.showUndo(host, resources.getString(R.string.snack_deleted), undoLabel) {
                         app.container.tasks.restoreFromTrash(listOf(taskId))
                     }
                     nav.back()
                 }
                 is EditorEvent.Duplicated -> {
-                    scope.showMessage(host, context.getString(R.string.editor_duplicated))
+                    scope.showMessage(host, resources.getString(R.string.editor_duplicated))
                     nav.openTask(e.id)
                 }
                 EditorEvent.Missing -> nav.back()
