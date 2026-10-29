@@ -3,6 +3,19 @@
 All notable changes to Taskfern are listed here. Every push to `main` is published automatically as a GitHub Release
 named `vMAJOR.MINOR.BUILD` (see [docs/RELEASING.md](docs/RELEASING.md)); the release page lists the commits it contains.
 
+## Unreleased
+
+### Added
+- Update check: Taskfern can look for a newer release on GitHub once a day and show a popup with the new version,
+  short release notes and **Download** (opens the APK in your browser), **Later** and **Skip this version**. Release
+  builds ask once on first start whether to turn it on; *Settings → Updates* has the switch, **Check now**, the last
+  check time and the installed version.
+
+### Changed
+- Taskfern now has the `INTERNET` permission, used only by the optional update check (one HTTPS request to
+  `api.github.com` at most once a day, nothing about you or your tasks is sent). The build and release checks still
+  reject network-state, Wi-Fi-state, broad storage and advertising-ID permissions.
+
 ## 1.0 — first public release
 
 ### Added

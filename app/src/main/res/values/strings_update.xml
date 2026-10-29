@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- One-time question on the first start of a release build -->
+    <string name="update_consent_title">Check for updates automatically?</string>
+    <string name="update_consent_text">Taskfern asks GitHub once a day for the newest version number. Nothing about you or your tasks is sent.</string>
+    <string name="update_consent_hint">You can change this any time in Settings → Updates.</string>
+    <string name="update_consent_on">Turn on</string>
+    <string name="update_consent_off">No thanks</string>
+
+    <!-- Update popup -->
+    <string name="update_available_title">Taskfern %1$s is available</string>
+    <string name="update_available_installed">You have version %1$s.</string>
+    <string name="update_available_install_hint">Download opens the new version in your browser. When you open the file, Android asks to install it over the current app. Your tasks, lists and settings stay.</string>
+    <string name="update_download">Download</string>
+    <string name="update_later">Later</string>
+    <string name="update_skip">Skip this version</string>
+
+    <!-- Settings → Updates -->
+    <string name="settings_section_updates">Updates</string>
+    <string name="settings_update_auto">Check for updates automatically</string>
+    <string name="settings_update_auto_summary">Once a day, Taskfern asks GitHub for the newest version number. Nothing about you or your tasks is sent.</string>
+    <string name="settings_update_check_now">Check now</string>
+    <string name="settings_update_checking">Checking…</string>
+    <string name="settings_update_last_checked">Last checked %1$s</string>
+    <string name="settings_update_never_checked">Not checked yet</string>
+    <string name="settings_update_installed">Installed version</string>
+
+    <!-- Results of "Check now" -->
+    <string name="update_up_to_date">You have the newest version of Taskfern.</string>
+    <string name="update_no_release">No Taskfern release has been published yet.</string>
+    <string name="update_failed">Couldn’t check for updates. Check your connection and try again.</string>
+</resources>

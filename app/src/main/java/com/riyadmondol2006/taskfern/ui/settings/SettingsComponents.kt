@@ -264,6 +264,6 @@ internal fun Context.openNotificationSettings() {
     if (!startSafely(intent)) openAppDetails()
 }
 
-/** Opens a web page in the browser. Taskfern itself never goes online. */
+/** Opens a web page (or a download) in the browser, which makes the connection; Taskfern does not fetch it. */
 internal fun Context.openWebPage(url: String): Boolean =
     startSafely(Intent(Intent.ACTION_VIEW, url.toUri()).addCategory(Intent.CATEGORY_BROWSABLE))

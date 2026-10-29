@@ -2,14 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Taskfern is offline: no INTERNET permission. The build fails if a dependency adds one (verifyOfflineManifest). -->
+    <!-- Used only for the optional update check: one HTTPS request to api.github.com, at most once a day, after the user
+         agrees. Tasks and settings never leave the phone. verifyOfflineManifest fails the build if any other network,
+         broad-storage or advertising permission appears. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Exact reminder times. The user can deny it; reminders then fall back to inexact alarms. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Re-arm reminders after a restart. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- WorkManager declares this for network constraints, which Taskfern never uses. -->
+    <!-- WorkManager declares this for network constraints, which Taskfern never uses (the update check needs no network
+         state: it simply fails quietly when offline). -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <application
@@ -24,6 +28,7 @@
         android:supportsRtl="true"
         android:localeConfig="@xml/locales_config"
         android:theme="@style/Theme.Taskfern"
+        android:usesCleartextTraffic="false"
         tools:targetApi="34">
 
         <activity

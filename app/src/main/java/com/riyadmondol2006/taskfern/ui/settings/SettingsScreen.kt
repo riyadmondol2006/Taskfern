@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.format.DateUtils
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,6 +53,9 @@ import androidx.compose.material.icons.outlined.Wallpaper
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.AlarmAdd
+import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -86,6 +90,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.AppContainer
+import com.riyadmondol2006.taskfern.BuildConfig
 import com.riyadmondol2006.taskfern.R
 import com.riyadmondol2006.taskfern.widget.WidgetPinning
 import androidx.compose.material.icons.outlined.Widgets
@@ -102,6 +107,7 @@ import com.riyadmondol2006.taskfern.ui.common.taskfernViewModel
 import com.riyadmondol2006.taskfern.ui.navigation.AppNavigator
 import com.riyadmondol2006.taskfern.ui.navigation.SmartViewKey
 import com.riyadmondol2006.taskfern.ui.theme.seed
+import com.riyadmondol2006.taskfern.update.UpdateResult
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -146,6 +152,12 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     }
 
     fun canScheduleExact(): Boolean = c.reminders.canScheduleExact()
+
+    val checkingForUpdate = c.updates.checking
+    fun setUpdateCheck(value: Boolean) = write { setUpdateCheck(value) }
+
+    /** A newer version opens the update popup (hosted by the root UI); other results are for a short message. */
+    suspend fun checkForUpdateNow(): UpdateResult = c.updates.checkNow()
 }
 
 /** What Android currently allows; re-read every time the screen resumes. */
@@ -201,6 +213,18 @@ fun SettingsScreen(nav: AppNavigator) {
         if (!granted) scope.showMessage(snackbar, resources.getString(R.string.settings_notifications_denied))
     }
     var dialog by rememberSaveable { mutableStateOf<SettingsDialog?>(null) }
+    val checkingForUpdate by vm.checkingForUpdate.collectAsStateWithLifecycle()
+    fun checkForUpdate() {
+        scope.launch {
+            val message = when (vm.checkForUpdateNow()) {
+                is UpdateResult.Available -> null
+                UpdateResult.UpToDate -> R.string.update_up_to_date
+                UpdateResult.NoReleaseYet -> R.string.update_no_release
+                is UpdateResult.Failed -> R.string.update_failed
+            }
+            if (message != null) showMessage(snackbar, resources.getString(message))
+        }
+    }
 
     SettingsScaffold(title = stringResource(R.string.nav_settings), onBack = nav::back) { padding ->
         val s = settings ?: return@SettingsScaffold
@@ -464,6 +488,42 @@ fun SettingsScreen(nav: AppNavigator) {
                     NavRow(Icons.Outlined.Archive, stringResource(R.string.view_archived), stringResource(R.string.settings_archived_summary)) {
                         nav.openTaskList(SmartViewKey.ARCHIVED)
                     }
+                }
+            }
+
+            // ---- Updates ---------------------------------------------------------------------------------------------
+            item {
+                SettingsGroup(stringResource(R.string.settings_section_updates)) {
+                    SettingsSwitch(
+                        title = stringResource(R.string.settings_update_auto),
+                        summary = stringResource(R.string.settings_update_auto_summary),
+                        icon = Icons.Outlined.Update,
+                        checked = s.updateCheck == true,
+                        onCheckedChange = vm::setUpdateCheck,
+                    )
+                    SettingsItem(
+                        title = stringResource(R.string.settings_update_check_now),
+                        summary = when {
+                            checkingForUpdate -> stringResource(R.string.settings_update_checking)
+                            s.lastUpdateCheckAt <= 0L -> stringResource(R.string.settings_update_never_checked)
+                            else -> stringResource(
+                                R.string.settings_update_last_checked,
+                                DateUtils.getRelativeTimeSpanString(
+                                    s.lastUpdateCheckAt,
+                                    System.currentTimeMillis(),
+                                    DateUtils.MINUTE_IN_MILLIS,
+                                ).toString(),
+                            )
+                        },
+                        icon = Icons.Outlined.Refresh,
+                        enabled = !checkingForUpdate,
+                        onClick = ::checkForUpdate,
+                    )
+                    SettingsItem(
+                        title = stringResource(R.string.settings_update_installed),
+                        summary = stringResource(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+                        icon = Icons.Outlined.NewReleases,
+                    )
                 }
             }
 

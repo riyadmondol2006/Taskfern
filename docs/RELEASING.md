@@ -13,7 +13,8 @@ The [Release workflow](../.github/workflows/release.yml) runs two jobs:
    3. decode the keystore from secrets into the runner's temporary directory and check alias and passwords;
    4. build the release APK with R8 and resource shrinking, signed with the release key;
    5. verify the APK: signature scheme v2+, not a debug certificate, application id `com.riyadmondol2006.taskfern`,
-      expected `versionName`/`versionCode`, and no `INTERNET` permission;
+      expected `versionName`/`versionCode`, and no network-state, Wi-Fi-state, broad storage or advertising-ID
+      permission (`INTERNET` is allowed for the update check);
    6. compute the SHA-256, write release notes from the commits since the previous tag;
    7. create the tag and GitHub Release with `Taskfern-vX.Y.N-release.apk` and its `.sha256` file;
    8. delete the keystore from the runner.
@@ -80,6 +81,14 @@ then run `./gradlew :app:assembleRelease`.
 Release runs share one concurrency group per branch with `cancel-in-progress: false`: a release in progress always
 finishes. GitHub keeps at most one run waiting; if several pushes arrive during a release, only the newest waits and
 the intermediate ones are skipped. That newest run builds a commit that contains all earlier ones, so nothing is lost.
+
+## How the app finds new releases
+
+Installed apps with the update check turned on read `https://api.github.com/repos/riyadmondol2006/Taskfern/releases/latest`
+at most once a day. They offer a release when its tag's last number (the versionCode) is higher than their own, skip
+drafts and pre-releases, and link **Download** to the first `.apk` asset (falling back to the release page). Keep the
+tag format `vMAJOR.MINOR.CODE` and the APK attached, and the popup keeps working. Forks set
+`-Ptaskfern.updateRepo=owner/name` (or `taskfern.updateRepo` in `gradle.properties`) to check their own releases.
 
 ## Checking a release
 

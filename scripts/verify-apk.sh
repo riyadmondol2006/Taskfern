@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Verifies a release APK before publishing: valid v2+ signature, expected application id, version name and version code.
+# Verifies a release APK before publishing: valid v2+ signature, expected application id, version name and version code,
+# and no permission beyond what Taskfern needs.
 # Prints `cert_sha256=<fingerprint>` and `apk_sha256=<hash>` for $GITHUB_OUTPUT. Never prints secrets.
 #
 # usage: verify-apk.sh <apk> <application-id> <version-name> <version-code>
@@ -35,11 +36,21 @@ vname=$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "$badging")
 [[ $vcode == "$version_code" ]] || { echo "verify-apk: versionCode is '$vcode', expected '$version_code'" >&2; exit 1; }
 [[ $vname == "$version_name" ]] || { echo "verify-apk: versionName is '$vname', expected '$version_name'" >&2; exit 1; }
 
-# The app must stay offline.
-if "$aapt2" dump permissions "$apk" | grep -q "android.permission.INTERNET"; then
-  echo "verify-apk: the APK requests INTERNET, which Taskfern must not do" >&2
-  exit 1
-fi
+# Permissions: INTERNET is allowed for the optional update check only. Network-state, Wi-Fi-state, broad storage and
+# advertising-ID permissions must never ship.
+permissions=$("$aapt2" dump permissions "$apk")
+for forbidden in \
+  android.permission.ACCESS_NETWORK_STATE \
+  android.permission.ACCESS_WIFI_STATE \
+  android.permission.READ_EXTERNAL_STORAGE \
+  android.permission.WRITE_EXTERNAL_STORAGE \
+  android.permission.MANAGE_EXTERNAL_STORAGE \
+  com.google.android.gms.permission.AD_ID; do
+  if grep -q "name='$forbidden'" <<< "$permissions"; then
+    echo "verify-apk: the APK requests $forbidden, which Taskfern must not do" >&2
+    exit 1
+  fi
+done
 
 echo "verify-apk: OK $pkg $vname ($vcode), signer SHA-256 $cert" >&2
 echo "cert_sha256=$cert"

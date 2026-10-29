@@ -15,7 +15,7 @@ reasoning behind the priorities is in [PRODUCT_RESEARCH.md](PRODUCT_RESEARCH.md)
 | Background | AlarmManager for reminders, WorkManager for daily jobs | Exact alarms only where a user-chosen time requires it; WorkManager batches the rest |
 | Widgets | Jetpack Glance (RemoteViews underneath) | Interactive lists and per-instance state on Android 8+ |
 | DI | Hand-written `AppContainer` | The graph is small; no annotation processing at startup |
-| Network | None. No `INTERNET` permission (enforced by a build check) | Privacy and offline promise |
+| Network | Only an optional update check: one HTTPS request to `api.github.com` at most once a day, after the user agrees. `INTERNET` is the only network permission (enforced by a build check) | Privacy and offline promise, while letting sideloaded users learn about new releases |
 | Distribution | Signed APK on GitHub Releases only | No Play Store, no Play services, no Firebase |
 
 ## Architecture
@@ -67,12 +67,14 @@ ui (Compose screens + ViewModels, StateFlow)        widget (Glance widgets, acti
 
 **Should**: templates screen, launcher shortcuts, share-sheet capture, insights, focus timer, ICS export of dated tasks.
 
-**Won't (this release)**: accounts, cloud sync, collaboration, location reminders, AI or network features, Play Store.
+**Won't (this release)**: accounts, cloud sync, collaboration, location reminders, AI or network features (beyond
+the opt-in update check), Play Store.
 
 ## Acceptance criteria
 
 * `./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleRelease` succeed.
-* The merged manifest has no `INTERNET`, network-state or broad storage permission.
+* The merged manifest has no network-state, Wi-Fi-state, broad storage or advertising-ID permission; `INTERNET` is used
+  only by the opt-in update check.
 * Recurrence engine unit tests cover month ends, leap years, intervals, weekday sets, end conditions, missed occurrences.
 * Reminder maths tests cover DST gaps/overlaps and zone changes.
 * Instrumented tests cover DAO queries, completing/undoing recurring tasks, backup round-trip, and the schema.

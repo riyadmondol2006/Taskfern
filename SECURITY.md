@@ -20,5 +20,7 @@ Please do **not** open a public issue for security problems. Use GitHub's privat
 
 ## Scope notes
 
-Taskfern has no network permission, no server and no accounts, so most web-style attacks do not apply. Backup files are
-plain JSON that you choose where to store; protect them like any other personal document.
+Taskfern has no server and no accounts, and its only network use is the optional update check (one HTTPS GET to
+`api.github.com`, response capped at 256 KB and parsed leniently, links accepted only over HTTPS), so most web-style
+attacks do not apply. Backup files are plain JSON that you choose where to store; protect them like any other
+personal document.

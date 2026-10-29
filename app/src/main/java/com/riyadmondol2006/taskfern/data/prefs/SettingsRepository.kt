@@ -47,6 +47,12 @@ data class Settings(
     val lastQuickAddListId: Long = 0,
     /** When a new day begins, minutes after midnight (0 = midnight). See LogicalDay. */
     val dayStartMinutes: Int = 0,
+    /** Automatic update check: null until the user has answered the one-time question, then their answer. */
+    val updateCheck: Boolean? = null,
+    /** When GitHub last answered an update check, epoch milliseconds (0 = never). */
+    val lastUpdateCheckAt: Long = 0,
+    /** Version code the user chose to skip in the update popup (0 = none). Newer versions are offered again. */
+    val skippedUpdateCode: Int = 0,
 ) {
     val defaultReminderTime: LocalTime get() = LocalTime.of(defaultReminderMinutes / 60, defaultReminderMinutes % 60)
 }
@@ -78,6 +84,9 @@ class SettingsRepository(private val context: Context) {
         val templatesSeeded = booleanPreferencesKey("templates_seeded")
         val lastQuickAddList = longPreferencesKey("last_quick_add_list")
         val dayStart = intPreferencesKey("day_start_minutes")
+        val updateCheck = booleanPreferencesKey("update_check")
+        val lastUpdateCheck = longPreferencesKey("last_update_check_at")
+        val skippedUpdate = intPreferencesKey("skipped_update_code")
     }
 
     val settings: Flow<Settings> = context.dataStore.data.map { p ->
@@ -104,6 +113,9 @@ class SettingsRepository(private val context: Context) {
             templatesSeeded = p[Keys.templatesSeeded] ?: d.templatesSeeded,
             lastQuickAddListId = p[Keys.lastQuickAddList] ?: d.lastQuickAddListId,
             dayStartMinutes = p[Keys.dayStart] ?: d.dayStartMinutes,
+            updateCheck = p[Keys.updateCheck],
+            lastUpdateCheckAt = p[Keys.lastUpdateCheck] ?: d.lastUpdateCheckAt,
+            skippedUpdateCode = p[Keys.skippedUpdate] ?: d.skippedUpdateCode,
         )
     }.distinctUntilChanged()
 
@@ -133,4 +145,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLastQuickAddListId(id: Long) = context.dataStore.edit { it[Keys.lastQuickAddList] = id }
     suspend fun setDayStartMinutes(minutes: Int) =
         context.dataStore.edit { it[Keys.dayStart] = minutes.coerceIn(0, com.riyadmondol2006.taskfern.domain.LogicalDay.MAX_START_MINUTES) }
+    suspend fun setUpdateCheck(enabled: Boolean) = context.dataStore.edit { it[Keys.updateCheck] = enabled }
+    suspend fun setLastUpdateCheckAt(millis: Long) = context.dataStore.edit { it[Keys.lastUpdateCheck] = millis }
+    suspend fun setSkippedUpdateCode(code: Int) = context.dataStore.edit { it[Keys.skippedUpdate] = code }
 }

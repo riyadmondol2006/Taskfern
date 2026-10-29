@@ -98,7 +98,7 @@
     <string name="about_name">Taskfern</string>
     <string name="about_version">Version %1$s (%2$d)</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy">Taskfern works entirely offline. There is no account, no ads and no trackers, and the app does not even have permission to use the internet. Your tasks, lists and routines stay on this phone unless you export a backup yourself.</string>
+    <string name="about_privacy">Taskfern works offline. There is no account, no ads and no trackers. The only time it goes online is the optional update check: if you turn it on, it asks GitHub for the newest version number at most once a day, and nothing about you or your tasks is sent. Your tasks, lists and routines stay on this phone unless you export a backup yourself.</string>
     <string name="about_project">Project</string>
     <string name="about_source">Source code</string>
     <string name="about_releases">Releases</string>

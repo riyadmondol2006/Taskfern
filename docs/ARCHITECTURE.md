@@ -1,7 +1,8 @@
 # Architecture
 
 Taskfern is a single-module Android app (`:app`) written in Kotlin with Jetpack Compose. It has no server and no
-network access. This page explains how the code is organised and why.
+sync. Its only network access is an optional, user-approved update check against GitHub Releases. This page explains
+how the code is organised and why.
 
 ## Layers
 
@@ -21,8 +22,10 @@ com.riyadmondol2006.taskfern
 ├── reminders/                     AlarmManager scheduler, broadcast receivers, notifications, WorkManager daily jobs
 ├── focus/                         focus-timer controller (timestamps + one alarm, no service)
 ├── backup/                        JSON backup/restore and .ics export
+├── update/                        optional update check: release JSON parser, throttle rules, HTTPS fetch, controller
 ├── widget/                        Glance widgets, action callbacks, configuration activities, update coalescing
 └── ui/                            Compose screens and ViewModels per feature, theme, navigation, shared components
+                                   (ui/update: the one-time update question and the update popup)
 ```
 
 ## Data flow
@@ -53,7 +56,17 @@ com.riyadmondol2006.taskfern
 - **Manual dependency injection.** `AppContainer` constructs repositories lazily; widgets, receivers and workers reach
   it through the `Application`. This keeps start-up fast and avoids annotation processing beyond Room.
 - **Offline enforcement.** `verifyOfflineManifest<Variant>` fails the build when the merged manifest requests
-  `INTERNET`, network-state, broad storage or advertising-ID permissions.
+  network-state, Wi-Fi-state, broad storage or advertising-ID permissions. `INTERNET` is the one network permission
+  allowed, and only the update check uses it; `scripts/verify-apk.sh` repeats the check on the signed release APK.
+- **Update check.** `update/UpdateChecker` makes one HTTPS GET to
+  `https://api.github.com/repos/<UPDATE_REPO>/releases/latest` (`HttpURLConnection` on `Dispatchers.IO`, 10 s
+  timeouts, 256 KB response cap, no cookies or identifiers). `ReleaseParser` and `UpdatePolicy` are pure and
+  unit-tested: tags `vMAJOR.MINOR.CODE` are compared by versionCode, drafts, pre-releases and unknown tags are never
+  offered, and the APK asset is preferred over the release page. `UpdateController` (in `AppContainer`) runs the
+  automatic check at most once per 24 hours and only when the user agreed (`updateCheck` in DataStore; release builds
+  ask once on first start), remembers a skipped version, and holds the release shown by `ui/update/UpdatePrompts`,
+  which the root UI hosts. Download opens the APK URL in the browser; the app never downloads or installs anything.
+  Forks point the check at their own repository with `-Ptaskfern.updateRepo=owner/name`.
 
 ## Background work
 
@@ -62,6 +75,7 @@ com.riyadmondol2006.taskfern
 | `AlarmManager` (exact when allowed) | task and routine reminders, focus-timer end | user-chosen times |
 | `WorkManager` one-time work, re-enqueued daily | midnight rollover (widgets, trash purge), daily agenda | batched by the OS, survives reboot |
 | Broadcast receivers | boot, app update, time and time-zone change, exact-alarm permission change | rebuild alarms |
+| Network: one HTTPS request on app start, at most once a day, only if enabled | update check (GitHub Releases) | the only network use; no background polling |
 
 There is no foreground service and nothing runs continuously.
 
