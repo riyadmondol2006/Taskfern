@@ -104,7 +104,8 @@ private class NavControllerNavigator(
     override fun openInsights() = nav.navigate(Route.Insights) { launchSingleTop = true }
     override fun openFocus(taskId: Long) = nav.navigate(Route.Focus(taskId)) { launchSingleTop = true }
     override fun openAbout() = nav.navigate(Route.About) { launchSingleTop = true }
-    override fun quickAdd(listId: Long?, dueToday: Boolean) = onQuickAdd(QuickAddDefaults(listId = listId, dueToday = dueToday))
+    override fun quickAdd(listId: Long?, dueToday: Boolean, dueDate: java.time.LocalDate?) =
+        onQuickAdd(QuickAddDefaults(listId = listId, dueToday = dueToday, dueDate = dueDate))
 
     fun switchTab(route: Route) = nav.navigate(route) {
         popUpTo(nav.graph.findStartDestination().id) { saveState = true }

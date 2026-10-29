@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_title_hint">Task title</string>
+    <string name="editor_title_required">A task needs a title. The previous title is kept until you type one.</string>
+    <string name="editor_notes_hint">Add notes</string>
+    <string name="editor_next_week">Next week</string>
+    <string name="editor_pick_date">Pick date</string>
+    <string name="editor_add_time">Add time</string>
+    <string name="editor_remove_time">Remove time</string>
+    <string name="editor_reminders">Reminders</string>
+    <string name="editor_reminder_default_time">No time set, so it reminds at %1$s (your default reminder time).</string>
+    <string name="editor_reminder_due_time">Relative to the due time, %1$s.</string>
+    <string name="editor_inexact_hint">Exact alarms are off, so reminders may arrive a few minutes late. Tap to review.</string>
+    <string name="editor_set_repeat">Set repeat</string>
+    <string name="editor_repeat_explain">Completing marks only this occurrence done and moves the task to its next date. Stop repeating to end the series.</string>
+    <string name="editor_add_tag">Add a tag</string>
+    <string name="editor_remove_tag">Remove tag %1$s</string>
+    <string name="editor_add_step">Add a step</string>
+    <string name="editor_remove_step">Remove step %1$s</string>
+    <string name="editor_checklist_progress">Checklist · %1$d of %2$d</string>
+    <string name="editor_created">Created %1$s</string>
+    <string name="editor_completed_at">Completed %1$s</string>
+    <string name="editor_series_history">Repeat history</string>
+    <string name="editor_log_completed">Completed the %1$s occurrence</string>
+    <string name="editor_log_skipped">Skipped the %1$s occurrence</string>
+    <string name="editor_in_trash">This task is in Recently deleted.</string>
+    <string name="editor_duplicated">Duplicated. You\'re now editing the copy.</string>
+    <string name="editor_focus">Focus on this task</string>
+
+    <string name="repeat_title">Repeat</string>
+    <string name="repeat_none">Does not repeat</string>
+    <string name="repeat_every_day">Every day</string>
+    <string name="repeat_weekdays">Every weekday</string>
+    <string name="repeat_every_week">Every week</string>
+    <string name="repeat_every_month">Every month</string>
+    <string name="repeat_every_year">Every year</string>
+    <string name="repeat_weekly_on">Weekly on %1$s</string>
+    <string name="repeat_monthly_on">Monthly on day %1$d</string>
+    <string name="repeat_custom">Custom</string>
+    <string name="repeat_every">Every</string>
+    <string name="repeat_on">On</string>
+    <string name="repeat_on_days">%1$s on %2$s</string>
+    <string name="repeat_on_day_of_month">%1$s on day %2$d</string>
+    <string name="repeat_from">Next date counts from</string>
+    <string name="repeat_from_due">Due date</string>
+    <string name="repeat_from_completion">Completion</string>
+    <string name="repeat_from_due_explain">Keeps a fixed schedule, e.g. every Monday, even if you finish late.</string>
+    <string name="repeat_from_completion_explain">The next date is counted from the day you complete it, e.g. water plants 3 days after watering.</string>
+    <string name="repeat_after_completion_short">after completion</string>
+    <string name="repeat_ends">Ends</string>
+    <string name="repeat_end_never">Never</string>
+    <string name="repeat_end_on_date">On a date</string>
+    <string name="repeat_end_after">After a number of times</string>
+    <string name="repeat_until">until %1$s</string>
+    <string name="repeat_preview">Next dates</string>
+    <string name="repeat_preview_none">No further dates. The series ends.</string>
+    <string name="repeat_preview_if_on_time">(if completed on time)</string>
+    <string name="repeat_remove">Remove repeat</string>
+    <plurals name="repeat_every_n_days">
+        <item quantity="one">Every %d day</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+    <plurals name="repeat_every_n_weeks">
+        <item quantity="one">Every %d week</item>
+        <item quantity="other">Every %d weeks</item>
+    </plurals>
+    <plurals name="repeat_every_n_months">
+        <item quantity="one">Every %d month</item>
+        <item quantity="other">Every %d months</item>
+    </plurals>
+    <plurals name="repeat_every_n_years">
+        <item quantity="one">Every %d year</item>
+        <item quantity="other">Every %d years</item>
+    </plurals>
+    <plurals name="repeat_times">
+        <item quantity="one">%d time</item>
+        <item quantity="other">%d times</item>
+    </plurals>
+    <plurals name="repeat_occurrences">
+        <item quantity="one">time</item>
+        <item quantity="other">times</item>
+    </plurals>
+    <plurals name="unit_days">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <plurals name="unit_weeks">
+        <item quantity="one">week</item>
+        <item quantity="other">weeks</item>
+    </plurals>
+    <plurals name="unit_months">
+        <item quantity="one">month</item>
+        <item quantity="other">months</item>
+    </plurals>
+    <plurals name="unit_years">
+        <item quantity="one">year</item>
+        <item quantity="other">years</item>
+    </plurals>
+</resources>

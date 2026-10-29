@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tasks_my_lists">My lists</string>
+    <string name="tasks_new_list">New list</string>
+    <string name="tasks_edit_list">Edit list</string>
+    <string name="tasks_delete_list">Delete list</string>
+    <string name="tasks_list_name">List name</string>
+    <string name="tasks_lists_empty">Group tasks into lists such as Work, Home or Errands.</string>
+    <string name="tasks_tags">Tags</string>
+    <string name="tasks_templates">Templates</string>
+    <string name="tasks_favorite">Favourite</string>
+    <string name="tasks_unfavorite">Remove from favourites</string>
+    <string name="tasks_delete_list_title">Delete “%1$s”?</string>
+    <string name="tasks_delete_list_message">The list will be removed.</string>
+    <string name="tasks_delete_list_keep">Keep its tasks (move them to the Inbox)</string>
+    <string name="tasks_delete_list_moves">The list will be removed and its tasks moved to the Inbox.</string>
+    <string name="tasks_filter">Filter</string>
+    <string name="tasks_sort">Sort</string>
+    <string name="tasks_filter_reminder">Only tasks with reminders</string>
+    <string name="tasks_filter_recurring">Only repeating tasks</string>
+    <string name="tasks_reorder">Reorder tasks</string>
+    <string name="tasks_reorder_done">Finish reordering</string>
+    <string name="tasks_move_up">Move up</string>
+    <string name="tasks_move_down">Move down</string>
+    <string name="tasks_bucket_this_week">Later this week</string>
+    <string name="tasks_bucket_later">Later</string>
+    <string name="tasks_trash_note">Deleted tasks are kept here for a while, then removed for good. Restore anything you need.</string>
+    <plurals name="tasks_empty_trash_confirm">
+        <item quantity="one">%d task will be deleted permanently. This can\'t be undone.</item>
+        <item quantity="other">%d tasks will be deleted permanently. This can\'t be undone.</item>
+    </plurals>
+    <string name="tasks_empty_title">No tasks here</string>
+    <string name="tasks_empty_message">Tap + to add one. Tasks you add appear here right away.</string>
+    <string name="tasks_empty_filtered_title">Nothing matches</string>
+    <string name="tasks_empty_filtered_message">Try removing a filter.</string>
+    <string name="tasks_empty_trash_title">Trash is empty</string>
+    <string name="tasks_empty_trash_message">Deleted tasks show up here so you can restore them.</string>
+    <string name="tasks_empty_archive_title">No archived tasks</string>
+    <string name="tasks_empty_archive_message">Archive tasks you want out of the way without deleting them.</string>
+    <string name="tasks_empty_completed_title">Nothing completed yet</string>
+    <string name="tasks_empty_completed_message">Completed tasks are kept here as your history.</string>
+    <string name="sort_smart">Smart (date, then priority)</string>
+    <string name="sort_due">Due date</string>
+    <string name="sort_priority">Priority</string>
+    <string name="sort_created">Newest first</string>
+    <string name="sort_title">Title</string>
+    <string name="sort_manual">My order</string>
+    <string name="search_hint">Search tasks, notes, tags</string>
+    <string name="search_recent_titles">Recent tasks</string>
+    <string name="search_try_other">Try other words. Deleted tasks are in Recently deleted.</string>
+    <string name="search_no_results">No tasks match “%1$s”</string>
+</resources>

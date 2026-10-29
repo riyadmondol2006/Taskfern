@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_month">Month</string>
+    <string name="calendar_week">Week</string>
+    <string name="calendar_prev_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_prev_week">Previous week</string>
+    <string name="calendar_next_week">Next week</string>
+    <string name="calendar_add_on_day">Add a task on this day</string>
+    <string name="calendar_day_empty_title">Free day</string>
+    <string name="calendar_day_empty_message">Nothing is due on this day.</string>
+    <string name="calendar_reschedule_hint">Long-press a task to move it to another day.</string>
+    <string name="calendar_upcoming_repeat">Repeats</string>
+    <string name="calendar_repeats_here">a repeating task falls on this day</string>
+    <plurals name="calendar_tasks_due">
+        <item quantity="one">%d task due</item>
+        <item quantity="other">%d tasks due</item>
+    </plurals>
+</resources>

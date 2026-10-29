@@ -74,6 +74,7 @@ import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.TimePickerDialog
 import com.riyadmondol2006.taskfern.ui.common.priorityColor
 import com.riyadmondol2006.taskfern.ui.common.priorityLabel
+import com.riyadmondol2006.taskfern.ui.common.rememberNotificationPermissionRequest
 import com.riyadmondol2006.taskfern.ui.common.taskfernViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -89,14 +90,22 @@ data class QuickAddDefaults(
     val dueToday: Boolean = false,
     val dueTomorrow: Boolean = false,
     val text: String = "",
+    /** A specific due date (e.g. the day selected in the calendar). Wins over [dueToday]/[dueTomorrow]. */
+    val dueDate: LocalDate? = null,
 ) {
     companion object {
         val Saver: Saver<QuickAddDefaults?, Any> = Saver(
-            save = { d -> d?.let { listOf(it.listId ?: -1L, it.dueToday, it.dueTomorrow, it.text) } ?: listOf<Any>() },
+            save = { d ->
+                d?.let { listOf(it.listId ?: -1L, it.dueToday, it.dueTomorrow, it.text, it.dueDate?.toEpochDay() ?: Long.MIN_VALUE) }
+                    ?: listOf<Any>()
+            },
             restore = { v ->
                 val l = v as List<*>
                 if (l.isEmpty()) null
-                else QuickAddDefaults((l[0] as Long).takeIf { it >= 0 }, l[1] as Boolean, l[2] as Boolean, l[3] as String)
+                else QuickAddDefaults(
+                    (l[0] as Long).takeIf { it >= 0 }, l[1] as Boolean, l[2] as Boolean, l[3] as String,
+                    (l[4] as Long).takeIf { it != Long.MIN_VALUE }?.let(LocalDate::ofEpochDay),
+                )
             },
         )
     }
@@ -143,15 +152,17 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     val today = remember { LocalDate.now() }
 
     var text by rememberSaveable { mutableStateOf(defaults.text) }
-    var date by rememberSaveable {
-        mutableStateOf(
-            when {
-                defaults.dueToday -> today
-                defaults.dueTomorrow -> today.plusDays(1)
-                else -> null
-            },
-        )
+    // The screen's default date (Today tab, calendar day…) applies only when the user neither typed a date nor chose one.
+    val defaultDate = remember(defaults) {
+        when {
+            defaults.dueDate != null -> defaults.dueDate
+            defaults.dueToday -> today
+            defaults.dueTomorrow -> today.plusDays(1)
+            else -> null
+        }
     }
+    var date by rememberSaveable { mutableStateOf<LocalDate?>(null) }
+    var dateCleared by rememberSaveable { mutableStateOf(false) }
     var time by rememberSaveable { mutableStateOf<LocalTime?>(null) }
     var priority by rememberSaveable { mutableIntStateOf(0) }
     var listId by rememberSaveable { mutableStateOf(defaults.listId) }
@@ -168,7 +179,7 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     val parsed = remember(text, smartParsing) {
         if (smartParsing) QuickAddParser.parse(text, today) else QuickAddParser.Result(text.trim())
     }
-    val effDate = date ?: parsed.date
+    val effDate = if (dateCleared) null else date ?: parsed.date ?: defaultDate
     val effTime = time ?: parsed.time
     val effPriority = if (priority != 0) priority else parsed.priority ?: 0
     val effReminder = (reminderOn ?: settings.autoReminder) && effDate != null
@@ -179,10 +190,12 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
         runCatching { focus.requestFocus() }
     }
     val scope = rememberCoroutineScope()
+    val askNotifications = rememberNotificationPermissionRequest()
 
     fun submit() {
         val title = parsed.title.trim()
         if (title.isEmpty()) return
+        if (effReminder) askNotifications()
         vm.add(
             TaskDraft(
                 title = title,
@@ -268,14 +281,14 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
                     leadingIcon = { Icon(Icons.Outlined.Event, null, Modifier.size(18.dp)) },
                 )
                 DropdownMenu(dateMenu, onDismissRequest = { dateMenu = false }) {
-                    DropdownMenuItem(text = { Text(stringResource(R.string.today)) }, onClick = { date = today; dateMenu = false })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.tomorrow)) }, onClick = { date = today.plusDays(1); dateMenu = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.today)) }, onClick = { date = today; dateCleared = false; dateMenu = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.tomorrow)) }, onClick = { date = today.plusDays(1); dateCleared = false; dateMenu = false })
                     DropdownMenuItem(text = { Text(stringResource(R.string.quick_add_next_week)) }, onClick = {
-                        date = today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY)); dateMenu = false
+                        date = today.with(java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.MONDAY)); dateCleared = false; dateMenu = false
                     })
                     DropdownMenuItem(text = { Text(stringResource(R.string.quick_add_pick_date)) }, onClick = { dateMenu = false; showDatePicker = true })
                     DropdownMenuItem(text = { Text(stringResource(R.string.no_date)) }, onClick = {
-                        date = null; time = null; smartParsing = smartParsing && parsed.date == null; dateMenu = false
+                        date = null; time = null; dateCleared = true; dateMenu = false
                     })
                 }
             }
@@ -330,11 +343,11 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
         }
     }
 
-    if (showDatePicker) DatePickerSheet(initial = effDate, onPick = { date = it }, onDismiss = { showDatePicker = false })
+    if (showDatePicker) DatePickerSheet(initial = effDate, onPick = { date = it; dateCleared = false }, onDismiss = { showDatePicker = false })
     if (showTimePicker) {
         TimePickerDialog(
             initial = effTime,
-            onPick = { time = it; if (effDate == null) date = today },
+            onPick = { time = it; if (effDate == null) { date = today; dateCleared = false } },
             onDismiss = { showTimePicker = false },
             onClear = { time = null },
         )

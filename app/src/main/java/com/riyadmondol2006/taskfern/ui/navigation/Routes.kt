@@ -59,5 +59,5 @@ interface AppNavigator {
     fun openFocus(taskId: Long = 0)
     fun openAbout()
     /** Opens the Quick Add sheet with optional defaults. */
-    fun quickAdd(listId: Long? = null, dueToday: Boolean = false)
+    fun quickAdd(listId: Long? = null, dueToday: Boolean = false, dueDate: java.time.LocalDate? = null)
 }

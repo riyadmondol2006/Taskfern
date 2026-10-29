@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_night">Hello, night owl</string>
+    <string name="today_summary_clear">You\'re all clear</string>
+    <plurals name="today_summary_left">
+        <item quantity="one">%d task left</item>
+        <item quantity="other">%d tasks left</item>
+    </plurals>
+    <plurals name="today_summary_done">
+        <item quantity="one">%d done</item>
+        <item quantity="other">%d done</item>
+    </plurals>
+    <plurals name="today_routines_left">
+        <item quantity="one">%d routine to finish</item>
+        <item quantity="other">%d routines to finish</item>
+    </plurals>
+    <string name="today_move_to_today">Move to today</string>
+    <string name="today_empty_title">Nothing planned for today</string>
+    <string name="today_empty_message">Enjoy the calm, or add a task with the button below.</string>
+    <string name="today_all_done_title">All done for today</string>
+    <string name="today_all_done_message">Nice work. Everything due today is finished.</string>
+    <string name="today_nothing_else">Nothing else due today.</string>
+    <string name="today_upcoming_reminders">Upcoming reminders</string>
+    <string name="today_see_all">See all</string>
+    <string name="today_completed_today">Completed today</string>
+    <string name="today_routine_done">Done for today</string>
+    <string name="today_notifications_off">Notifications are off, so reminders can\'t alert you.</string>
+    <string name="today_notifications_fix">Fix</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_collapse">Collapse</string>
+</resources>
