@@ -110,4 +110,8 @@
     <string name="about_oss_intro">Taskfern is built with these open-source libraries, each published under the Apache License 2.0.</string>
     <string name="about_apache">Apache-2.0</string>
     <string name="about_apache_full">Apache License, Version 2.0</string>
+    <string name="settings_section_widgets">Home-screen widgets</string>
+    <string name="settings_widgets_explain">Tap a widget to place it on your home screen. You can also long-press the home screen and choose Widgets.</string>
+    <string name="settings_widgets_unsupported">Your launcher can\'t add widgets from here. Long-press the home screen, choose Widgets and look for Taskfern.</string>
+    <string name="settings_widgets_add">Add to home screen</string>
 </resources>

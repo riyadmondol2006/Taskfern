@@ -86,6 +86,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.AppContainer
 import com.riyadmondol2006.taskfern.R
+import com.riyadmondol2006.taskfern.widget.WidgetPinning
+import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material.icons.outlined.AddToHomeScreen
 import com.riyadmondol2006.taskfern.data.prefs.Accent
 import com.riyadmondol2006.taskfern.data.prefs.SettingsRepository
 import com.riyadmondol2006.taskfern.data.prefs.ThemeMode
@@ -415,6 +418,29 @@ fun SettingsScreen(nav: AppNavigator) {
                         icon = Icons.Outlined.Timer,
                         onClick = { dialog = SettingsDialog.FOCUS },
                     )
+                }
+            }
+
+            // ---- Home-screen widgets ---------------------------------------------------------------------------------
+            item {
+                SettingsGroup(stringResource(R.string.settings_section_widgets)) {
+                    val pinSupported = remember { WidgetPinning.isSupported(context) }
+                    Text(
+                        stringResource(if (pinSupported) R.string.settings_widgets_explain else R.string.settings_widgets_unsupported),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                    WidgetPinning.entries.forEach { w ->
+                        SettingsItem(
+                            title = stringResource(w.label),
+                            summary = stringResource(w.description),
+                            icon = Icons.Outlined.Widgets,
+                            enabled = pinSupported,
+                            onClick = { WidgetPinning.requestPin(context, w.receiver) },
+                            trailing = if (pinSupported) ({ Icon(Icons.Outlined.AddToHomeScreen, stringResource(R.string.settings_widgets_add)) }) else null,
+                        )
+                    }
                 }
             }
 
