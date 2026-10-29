@@ -43,15 +43,17 @@ occurrence_log = []
 
 
 def task(title, list_id=None, due=None, time=None, priority=0, notes="", tags=(), rec=None, rems=(), subs=(),
-         completed_at=None, pinned=False, created=-7, history=()):
+         completed_at=None, pinned=False, created=-7, history=(), scope=None, due_iso=None):
     tid = next_id["task"]
     next_id["task"] += 1
     t = {
         "id": tid, "listId": list_id, "title": title, "notes": notes, "priority": priority,
-        "dueDate": day(due) if due is not None else None, "dueTime": time, "tags": list(tags), "pinned": pinned,
+        "dueDate": due_iso or (day(due) if due is not None else None), "dueTime": time, "tags": list(tags), "pinned": pinned,
         "completed": completed_at is not None, "completedAt": completed_at,
         "createdAt": ms(created, 8), "updatedAt": ms(created, 8), "position": tid,
     }
+    if scope:
+        t["dueScope"] = scope
     if rec:
         t["recurrence"] = rec
         # The series started at its first logged occurrence, so a history of on-time completions forms a streak.
@@ -92,6 +94,13 @@ task("Plan weekend hike", None, due=3, tags=["outdoors"],
      subs=[("Check the weather", False), ("Pack snacks", False)])
 task("Submit expense report", 1, due=6, priority=1)
 task("Book car service", 3, due=9)
+# Plans: no fixed day, just this week / month / year
+week_end = today + dt.timedelta(days=6 - today.weekday())
+month_end = (today.replace(day=28) + dt.timedelta(days=4)).replace(day=1) - dt.timedelta(days=1)
+task("Clean out the garage", 2, scope="week", due_iso=week_end.isoformat(),
+     subs=[("Sort boxes", True), ("Donate old bikes", False), ("Sweep the floor", False)])
+task("Book a summer holiday", None, scope="month", due_iso=month_end.isoformat(), tags=["travel"])
+task("Run a 10k", 4, scope="year", due_iso=today.replace(month=12, day=31).isoformat(), priority=2)
 # No date
 task("Read \"The Overstory\"", None, priority=1, tags=["reading"])
 task("Fix the squeaky door", 2)
