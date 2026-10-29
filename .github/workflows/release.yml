@@ -1,0 +1,222 @@
+name: Release
+
+# Every push to main is verified, versioned, signed and published as a GitHub Release (docs/RELEASING.md).
+# A manual run (workflow_dispatch) on main does the same; on other branches it only verifies.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One release at a time. Runs are never cancelled, so a release that has started always finishes. GitHub keeps at most
+# one run waiting per group; if two pushes arrive while a release is running, the newer one waits and the older waiting
+# one is replaced — that is safe because the newer run builds a newer commit that contains the older one.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: Test, lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      # Refuses a tampered gradle-wrapper.jar before it runs.
+      - uses: gradle/actions/wrapper-validation@v6
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Android Lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
+      - name: Offline manifest check and debug build
+        run: ./gradlew :app:verifyOfflineManifestDebug :app:verifyOfflineManifestRelease :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Sign and publish
+    needs: verify
+    # Only main, never forks (they have no signing key) and never pull requests.
+    if: github.ref == 'refs/heads/main' && github.event.repository.fork == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      APP_ID: com.riyadmondol2006.taskfern
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # release notes need the previous tag
+          persist-credentials: false # publishing uses GH_TOKEN directly
+
+      - uses: gradle/actions/wrapper-validation@v6
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Work out the version
+        id: version
+        run: scripts/release-version.sh "${{ github.run_number }}" | tee -a "$GITHUB_OUTPUT"
+
+      # Idempotency and downgrade protection:
+      #  - if this run's tag is already published with its APK (a rerun of a finished run), stop successfully;
+      #  - if a newer version is already published (an old run re-run later), stop successfully without publishing.
+      - name: Check published releases
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          CODE: ${{ steps.version.outputs.version_code }}
+        run: |
+          publish=true
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' > assets.txt 2>/dev/null; then
+            if grep -q '\.apk$' assets.txt && grep -q '\.sha256$' assets.txt; then
+              echo "::notice::$TAG is already published with its APK; nothing to do."
+              publish=false
+            else
+              echo "$TAG exists but is missing files; they will be uploaded again."
+            fi
+          fi
+          latest=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --exclude-pre-releases --limit 50 --json tagName --jq '.[].tagName' \
+            | sed -n 's/^v[0-9]*\.[0-9]*\.\([0-9]*\)$/\1/p' | sort -n | tail -n 1)
+          if [ -n "$latest" ] && [ "$latest" -gt "$CODE" ]; then
+            echo "::notice::A newer release (version code $latest) is already published; not publishing older $CODE."
+            publish=false
+          fi
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+
+      # Secrets are given only to the steps that need them. A missing or unusable key stops the release: a debug-signed
+      # or unsigned APK is never published.
+      - name: Restore and check the signing key
+        if: steps.guard.outputs.publish == 'true'
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          missing=()
+          for name in SIGNING_KEYSTORE_BASE64 SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS SIGNING_KEY_PASSWORD; do
+            [ -n "${!name//[[:space:]]/}" ] || missing+=("$name")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error title=Signing secrets missing::Add the repository secret(s): ${missing[*]}. Nothing was published."
+            exit 1
+          fi
+          keystore="$RUNNER_TEMP/taskfern-release.jks"
+          (umask 077 && printf '%s' "$SIGNING_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$keystore") \
+            || { echo "::error title=Invalid keystore secret::SIGNING_KEYSTORE_BASE64 is not valid base64."; exit 1; }
+          # Prove the passwords and alias work before the long build, without printing anything secret.
+          if ! keytool -list -keystore "$keystore" -storepass:env SIGNING_STORE_PASSWORD -alias "$SIGNING_KEY_ALIAS" > /dev/null 2>&1; then
+            echo "::error title=Signing key unusable::The keystore, store password or alias is wrong."
+            exit 1
+          fi
+          echo "TASKFERN_KEYSTORE_PATH=$keystore" >> "$GITHUB_ENV"
+
+      - name: Build the signed release APK
+        if: steps.guard.outputs.publish == 'true'
+        env:
+          TASKFERN_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          TASKFERN_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          TASKFERN_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          TASKFERN_REQUIRE_SIGNING: 'true'
+          TASKFERN_VERSION_CODE: ${{ steps.version.outputs.version_code }}
+          TASKFERN_VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: ./gradlew :app:verifyOfflineManifestRelease :app:assembleRelease --stacktrace
+
+      - name: Verify signature, identity and version
+        if: steps.guard.outputs.publish == 'true'
+        id: verify
+        run: >
+          scripts/verify-apk.sh app/build/outputs/apk/release/app-release.apk
+          "$APP_ID" "${{ steps.version.outputs.version_name }}" "${{ steps.version.outputs.version_code }}"
+          | tee -a "$GITHUB_OUTPUT"
+
+      - name: Stage files and notes
+        if: steps.guard.outputs.publish == 'true'
+        id: stage
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          APK_SHA: ${{ steps.verify.outputs.apk_sha256 }}
+          CERT_SHA: ${{ steps.verify.outputs.cert_sha256 }}
+        run: |
+          mkdir -p dist
+          apk="Taskfern-$TAG-release.apk"
+          cp app/build/outputs/apk/release/app-release.apk "dist/$apk"
+          (cd dist && sha256sum "$apk" > "$apk.sha256")
+          scripts/release-notes.sh "$TAG" "$apk" "$APK_SHA" "$CERT_SHA" > dist/notes.md
+          echo "apk=$apk" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the files on the run
+        if: steps.guard.outputs.publish == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: taskfern-${{ steps.version.outputs.tag }}
+          path: |
+            dist/*.apk
+            dist/*.sha256
+            app/build/outputs/mapping/release/mapping.txt
+          retention-days: 30
+
+      - name: Publish the GitHub Release
+        if: steps.guard.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          APK: ${{ steps.stage.outputs.apk }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" "dist/$APK" "dist/$APK.sha256" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" "dist/$APK" "dist/$APK.sha256" \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Taskfern $TAG" --notes-file dist/notes.md --latest
+          fi
+          {
+            echo "### Taskfern $TAG"
+            echo
+            echo "- APK: \`$APK\`"
+            echo "- SHA-256: \`${{ steps.verify.outputs.apk_sha256 }}\`"
+            echo "- Signing certificate SHA-256: \`${{ steps.verify.outputs.cert_sha256 }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/taskfern-release.jks"

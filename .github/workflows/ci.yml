@@ -1,0 +1,60 @@
+name: CI
+
+# Verification for pull requests and branches other than main. No secrets are used here, so it is safe for pull
+# requests from forks. Releases are built only by release.yml on main.
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: Test, lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/wrapper-validation@v6
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+      - name: Android Lint
+        run: ./gradlew :app:lintDebug --stacktrace
+      - name: Offline manifest check and builds
+        run: ./gradlew :app:verifyOfflineManifestDebug :app:verifyOfflineManifestRelease :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest --stacktrace
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: taskfern-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
