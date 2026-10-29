@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.focus
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
@@ -517,7 +518,7 @@ private fun HistoryRow(item: FocusHistoryItem) {
     val s = item.session
     val start = Instant.ofEpochMilli(s.startedAt).atZone(ZoneId.systemDefault())
     val focusedMinutes = (s.focusedSeconds / 60).toInt()
-    val whenText = "${Formatters.relativeDay(context, start.toLocalDate(), LocalDate.now())} ${Formatters.time(context, start.toLocalTime())}"
+    val whenText = "${Formatters.relativeDay(context, start.toLocalDate(), LogicalDay.today())} ${Formatters.time(context, start.toLocalTime())}"
     val detail = if (s.completed) pluralStringResource(R.plurals.focus_history_completed, s.plannedMinutes, s.plannedMinutes)
     else stringResource(R.string.focus_history_stopped, focusedMinutes, s.plannedMinutes)
     Row(

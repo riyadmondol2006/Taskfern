@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.quickadd
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -150,7 +151,7 @@ fun QuickAddContent(defaults: QuickAddDefaults, onClose: () -> Unit, modifier: M
     val lists by vm.lists.collectAsState()
     val settings by vm.settings.collectAsState()
     val context = LocalContext.current
-    val today = remember { LocalDate.now() }
+    val today = remember { LogicalDay.today() }
 
     var text by rememberSaveable { mutableStateOf(defaults.text) }
     // The screen's default date (Today tab, calendar day…) applies only when the user neither typed a date nor chose one.

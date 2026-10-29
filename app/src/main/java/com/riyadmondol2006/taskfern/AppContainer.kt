@@ -16,7 +16,10 @@ import com.riyadmondol2006.taskfern.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 
 /**
  * Hand-written dependency container, one per process. The object graph is small, so plain constructor injection keeps
@@ -59,6 +62,23 @@ class AppContainer(context: Context) {
     val reminders: ReminderScheduler by lazy { ReminderScheduler(appContext, tasks, routines, settings) }
     val widgets: WidgetUpdater by lazy { WidgetUpdater(appContext, appScope) }
     val focus: FocusController by lazy { FocusController(appContext, focusRepository, reminders) }
+
+    /**
+     * Keeps [LogicalDay] in step with the "New day starts at" setting. When it changes, the nightly job moves and
+     * widgets redraw for the (possibly different) day.
+     */
+    fun followDayStart() {
+        appScope.launch {
+            settings.settings.map { it.dayStartMinutes }.distinctUntilChanged().collect { minutes ->
+                val changed = LogicalDay.startMinutes != minutes
+                LogicalDay.startMinutes = minutes
+                if (changed) {
+                    scheduleDailyWork()
+                    widgets.refreshAll()
+                }
+            }
+        }
+    }
 
     /** (Re)enqueues the once-a-day jobs with the current settings. Cheap and idempotent. */
     suspend fun scheduleDailyWork() {

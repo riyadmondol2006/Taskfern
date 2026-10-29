@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.data.repo
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.room.withTransaction
 import com.riyadmondol2006.taskfern.data.db.OccurrenceAction
 import com.riyadmondol2006.taskfern.data.db.OccurrenceLogEntity
@@ -58,7 +59,7 @@ class TaskRepository(
     private val dao = db.taskDao()
 
     private fun now(): Long = clock.millis()
-    private fun today(): LocalDate = LocalDate.now(clock)
+    private fun today(): LocalDate = LogicalDay.today(clock)
 
     // ---- Observing ---------------------------------------------------------------------------------------------------
 

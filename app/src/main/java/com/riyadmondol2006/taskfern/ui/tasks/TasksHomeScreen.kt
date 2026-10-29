@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.tasks
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -131,7 +132,7 @@ class TasksHomeViewModel(private val tasks: TaskRepository, settings: SettingsRe
     val state: StateFlow<TasksHomeState> = combine(
         tasks.observeOpenRows(), tasks.observeListsWithCounts(), tasks.observeTags(), settings.settings,
     ) { open, lists, tags, s ->
-        val today = LocalDate.now()
+        val today = LogicalDay.today()
         val recentSince = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000
         TasksHomeState(
             counts = smartViews.associate { v ->

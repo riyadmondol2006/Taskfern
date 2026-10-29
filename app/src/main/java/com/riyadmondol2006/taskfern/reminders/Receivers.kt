@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.reminders
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -48,7 +49,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 ACTION_ROUTINE -> {
                     val id = intent.getLongExtra(EXTRA_ID, -1)
                     val routine = c.routines.getRoutine(id) ?: return@runAsync
-                    val today = LocalDate.now()
+                    val today = LogicalDay.today()
                     if (!routine.paused && RoutineRepository.runsOn(routine, today)) {
                         val steps = c.routines.getStepsWithChecks(id, today)
                         val left = steps.count { !it.checked }
@@ -84,7 +85,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 ACTION_SNOOZE -> c.tasks.snooze(id, System.currentTimeMillis() + 15 * 60_000L)
                 ACTION_TOMORROW -> {
                     val task = c.tasks.get(id) ?: return@runAsync
-                    if (task.dueDate == expected) c.tasks.setDueDate(listOf(id), LocalDate.now().plusDays(1))
+                    if (task.dueDate == expected) c.tasks.setDueDate(listOf(id), LogicalDay.today().plusDays(1))
                 }
             }
         }

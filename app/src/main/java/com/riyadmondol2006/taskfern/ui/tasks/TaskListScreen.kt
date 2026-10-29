@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.tasks
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -133,7 +134,7 @@ class TaskListViewModel(
         if (view == SmartViewKey.LIST) combine(tasks.observeLists(), flowOf(listId)) { l, id -> l.firstOrNull { it.id == id } } else flowOf(null)
 
     val state: StateFlow<TaskListState> = combine(source, settings.settings, refinement, listFlow, tasks.observeTags()) { rows, s, refine, list, tags ->
-        val today = LocalDate.now()
+        val today = LogicalDay.today()
         val sort = if (view == SmartViewKey.RECENT) TaskSort.CREATED else s.taskSort
         val sections: List<Pair<SectionKey?, List<TaskRow>>> = when (mode) {
             Mode.OPEN -> {
@@ -322,7 +323,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
                 if (key != null) {
                     item(key = "h-$key") {
                         val overdue = key == SectionKey.Bucket(TaskFilters.Bucket.OVERDUE) ||
-                            (key is SectionKey.Day && key.date?.isBefore(LocalDate.now()) == true && vm.isOpenMode)
+                            (key is SectionKey.Day && key.date?.isBefore(LogicalDay.today()) == true && vm.isOpenMode)
                         SectionHeader(
                             sectionLabel(key), count = rows.size,
                             color = if (overdue) LocalTaskfernColors.current.overdue else MaterialTheme.colorScheme.primary,

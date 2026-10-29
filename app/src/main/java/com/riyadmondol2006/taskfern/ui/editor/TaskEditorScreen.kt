@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.editor
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.outlined.LocalFireDepartment
@@ -263,7 +264,7 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
             // Date & time
             FieldRow(Icons.Outlined.Event) {
                 Column {
-                    val today = LocalDate.now()
+                    val today = LogicalDay.today()
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         DateChip(stringResource(R.string.today), draft.dueDate == today) { vm.setDueDate(today) }
                         DateChip(stringResource(R.string.tomorrow), draft.dueDate == today.plusDays(1)) { vm.setDueDate(today.plusDays(1)) }
@@ -436,7 +437,7 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
     if (showTime) {
         TimePickerDialog(
             initial = draft.dueTime,
-            onPick = { t -> vm.edit { it.copy(dueTime = t, dueDate = it.dueDate ?: LocalDate.now()) } },
+            onPick = { t -> vm.edit { it.copy(dueTime = t, dueDate = it.dueDate ?: LogicalDay.today()) } },
             onDismiss = { showTime = false },
             onClear = { vm.edit { it.copy(dueTime = null) } },
         )
@@ -444,7 +445,7 @@ fun TaskEditorScreen(nav: AppNavigator, taskId: Long) {
     if (showRepeat) {
         RepeatSheet(
             initial = draft.recurrence,
-            anchor = draft.dueDate ?: LocalDate.now(),
+            anchor = draft.dueDate ?: LogicalDay.today(),
             onSave = vm::setRecurrence,
             onDismiss = { showRepeat = false },
         )

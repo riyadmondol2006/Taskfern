@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.common
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -184,7 +185,7 @@ fun TaskItem(
     onToggle: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    today: LocalDate = LocalDate.now(),
+    today: LocalDate = LogicalDay.today(),
     showList: Boolean = true,
     selected: Boolean = false,
     selectionMode: Boolean = false,
@@ -401,7 +402,7 @@ fun DatePickerSheet(
     onDismiss: () -> Unit,
     allowPast: Boolean = true,
 ) {
-    val today = remember { LocalDate.now() }
+    val today = remember { LogicalDay.today() }
     val state = rememberDatePickerState(
         initialSelectedDateMillis = (initial ?: today).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
         selectableDates = object : SelectableDates {

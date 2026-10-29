@@ -2,7 +2,9 @@ package com.riyadmondol2006.taskfern
 
 import android.app.Application
 import com.riyadmondol2006.taskfern.reminders.Notifications
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class TaskfernApp : Application() {
     lateinit var container: AppContainer
@@ -12,6 +14,9 @@ class TaskfernApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         Notifications.createChannels(this)
+        // Read the day start before anything computes "today" (receivers and widgets may start the process).
+        runBlocking { LogicalDay.startMinutes = container.settings.current().dayStartMinutes }
+        container.followDayStart()
         // Startup housekeeping off the main thread: built-in templates once, alarms re-armed (cheap, and it repairs
         // anything lost to a force-stop), and the daily jobs enqueued.
         container.appScope.launch {

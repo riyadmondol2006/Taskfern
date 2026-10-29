@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.routines
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import com.riyadmondol2006.taskfern.domain.WeekdayMask
 import com.riyadmondol2006.taskfern.domain.HistoryDay
 import com.riyadmondol2006.taskfern.domain.RoutineHistory
@@ -90,7 +91,7 @@ private const val RATE_DAYS = 28L
 data class RoutineDetailUiState(
     val loaded: Boolean = false,
     val routine: RoutineEntity? = null,
-    val today: LocalDate = LocalDate.now(),
+    val today: LocalDate = LogicalDay.today(),
     val steps: List<StepState> = emptyList(),
     val historyRows: List<List<HistoryDay>> = emptyList(),
     val currentStreak: Int = 0,
@@ -108,7 +109,7 @@ class RoutineDetailViewModel(
     settings: SettingsRepository,
     private val routineId: Long,
 ) : ViewModel() {
-    private val date = currentDate().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LocalDate.now())
+    private val date = currentDate().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LogicalDay.today())
 
     val state: StateFlow<RoutineDetailUiState> = combine(
         routines.observeRoutine(routineId),

@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.calendar
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -95,7 +96,7 @@ data class DayMarks(val due: Int, val projected: Int)
 
 data class CalendarState(
     val month: YearMonth = YearMonth.now(),
-    val selected: LocalDate = LocalDate.now(),
+    val selected: LocalDate = LogicalDay.today(),
     val weekStartsMonday: Boolean = true,
     val marks: Map<LocalDate, DayMarks> = emptyMap(),
     val dayRows: List<TaskRow> = emptyList(),
@@ -106,7 +107,7 @@ enum class CalendarMode { MONTH, WEEK }
 
 class CalendarViewModel(tasks: TaskRepository, settings: SettingsRepository) : TaskActionsViewModel(tasks) {
     val month = MutableStateFlow(YearMonth.now())
-    val selected = MutableStateFlow(LocalDate.now())
+    val selected = MutableStateFlow(LogicalDay.today())
     val mode = MutableStateFlow(CalendarMode.MONTH)
 
     private val range = combine(month, selected, mode, settings.settings) { m, sel, md, s ->
@@ -152,11 +153,11 @@ class CalendarViewModel(tasks: TaskRepository, settings: SettingsRepository) : T
         else {
             val m = month.value.plusMonths(delta)
             month.value = m
-            selected.value = if (YearMonth.now() == m) LocalDate.now() else m.atDay(1)
+            selected.value = if (YearMonth.now() == m) LogicalDay.today() else m.atDay(1)
         }
     }
 
-    fun goToday() = select(LocalDate.now())
+    fun goToday() = select(LogicalDay.today())
 
     fun reschedule(row: TaskRow, date: LocalDate) = viewModelScope.launch { tasks.setDueDate(listOf(row.task.id), date) }
 
@@ -280,7 +281,7 @@ private fun weekdayHeaders(monday: Boolean): List<DayOfWeek> {
 @Composable
 private fun MonthGrid(state: CalendarState, onSelect: (LocalDate) -> Unit) {
     val (first, _) = CalendarViewModel.gridRange(state.month, state.weekStartsMonday)
-    val today = LocalDate.now()
+    val today = LogicalDay.today()
     // Square cells on phones; capped height on wide screens so the whole month stays visible.
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
     val cellHeight = (maxWidth / 7).coerceAtMost(56.dp)
@@ -318,7 +319,7 @@ private fun MonthGrid(state: CalendarState, onSelect: (LocalDate) -> Unit) {
 @Composable
 private fun WeekStrip(state: CalendarState, onSelect: (LocalDate) -> Unit) {
     val start = state.selected.with(TemporalAdjusters.previousOrSame(if (state.weekStartsMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY))
-    val today = LocalDate.now()
+    val today = LogicalDay.today()
     Row(Modifier.fillMaxWidth()) {
         for (i in 0 until 7) {
             val date = start.plusDays(i.toLong())
@@ -345,7 +346,7 @@ private fun DayCell(
     tall: Boolean = false,
 ) {
     val primary = MaterialTheme.colorScheme.primary
-    val past = date.isBefore(LocalDate.now())
+    val past = date.isBefore(LogicalDay.today())
     val dueCount = marks?.due ?: 0
     val dueText = pluralStringResource(R.plurals.calendar_tasks_due, dueCount, dueCount)
     val repeatsText = stringResource(R.string.calendar_repeats_here)

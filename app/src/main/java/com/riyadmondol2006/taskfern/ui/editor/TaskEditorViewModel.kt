@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.editor
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.data.db.OccurrenceLogEntity
@@ -122,11 +123,11 @@ class TaskEditorViewModel(
 
     fun toggleReminder(offset: Int) = _draft.update { d ->
         val list = if (offset in d.reminders) d.reminders - offset else (d.reminders + offset).sorted()
-        d.copy(reminders = list, dueDate = d.dueDate ?: LocalDate.now())
+        d.copy(reminders = list, dueDate = d.dueDate ?: LogicalDay.today())
     }
 
     fun setRecurrence(rule: RecurrenceRule?) = _draft.update { d ->
-        d.copy(recurrence = rule, dueDate = if (rule != null) d.dueDate ?: LocalDate.now() else d.dueDate)
+        d.copy(recurrence = rule, dueDate = if (rule != null) d.dueDate ?: LogicalDay.today() else d.dueDate)
     }
 
     private val saveLock = Mutex()

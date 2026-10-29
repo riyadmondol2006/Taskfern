@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.today
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.data.db.Priority
 import com.riyadmondol2006.taskfern.data.db.TaskRow
@@ -32,7 +33,7 @@ data class RoutineSummary(
 
 data class TodayState(
     val loaded: Boolean = false,
-    val date: LocalDate = LocalDate.now(),
+    val date: LocalDate = LogicalDay.today(),
     val userName: String = "",
     val overdue: List<TaskRow> = emptyList(),
     val dueToday: List<TaskRow> = emptyList(),
@@ -54,14 +55,14 @@ class TodayViewModel(
 ) : TaskActionsViewModel(tasks) {
 
     /** Re-evaluated whenever the screen resumes, so the dashboard rolls over to a new day. */
-    private val day = MutableStateFlow(LocalDate.now())
+    private val day = MutableStateFlow(LogicalDay.today())
 
     fun refreshDay() {
-        day.value = LocalDate.now()
+        day.value = LogicalDay.today()
     }
 
     private val taskPart = day.flatMapLatest { today ->
-        val startOfDay = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val startOfDay = LogicalDay.startMillis(today)
         combine(
             tasks.observeDueOnOrBefore(today),
             tasks.observeCompletedSince(startOfDay),
@@ -109,6 +110,6 @@ class TodayViewModel(
     fun moveOverdueToToday() {
         val ids = state.value.overdue.map { it.task.id }
         if (ids.isEmpty()) return
-        viewModelScope.launch { tasks.setDueDate(ids, LocalDate.now()) }
+        viewModelScope.launch { tasks.setDueDate(ids, LogicalDay.today()) }
     }
 }

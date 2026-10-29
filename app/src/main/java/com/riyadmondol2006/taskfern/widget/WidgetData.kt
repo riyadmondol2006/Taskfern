@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.widget
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import android.content.Context
 import com.riyadmondol2006.taskfern.AppContainer
 import com.riyadmondol2006.taskfern.TaskfernApp
@@ -20,15 +21,15 @@ internal object WidgetData {
     suspend fun config(context: Context, appWidgetId: Int, kind: String): WidgetConfigEntity? =
         container(context).database.widgetConfigDao().get(appWidgetId)?.takeIf { it.kind == kind }
 
-    suspend fun today(context: Context, today: LocalDate = LocalDate.now()): TodayModel {
+    suspend fun today(context: Context, today: LocalDate = LogicalDay.today()): TodayModel {
         val tasks = container(context).tasks
         val rows = tasks.observeDueOnOrBefore(today).first()
-        val midnight = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val midnight = LogicalDay.startMillis(today)
         val completed = tasks.observeCompletedSince(midnight).first().size
         return WidgetModels.today(rows, completed, today)
     }
 
-    suspend fun agenda(context: Context, today: LocalDate = LocalDate.now()): AgendaModel {
+    suspend fun agenda(context: Context, today: LocalDate = LogicalDay.today()): AgendaModel {
         val tasks = container(context).tasks
         val last = today.plusDays((WidgetModels.AGENDA_DAYS - 1).toLong())
         val rows = tasks.observeDueBetween(today, last).first()
@@ -61,7 +62,7 @@ internal object WidgetData {
         )
     }
 
-    suspend fun routine(context: Context, appWidgetId: Int, today: LocalDate = LocalDate.now()): RoutineModel {
+    suspend fun routine(context: Context, appWidgetId: Int, today: LocalDate = LogicalDay.today()): RoutineModel {
         val routines = container(context).routines
         val all = routines.getRoutines()
         val configured = config(context, appWidgetId, WidgetKind.ROUTINE)?.targetId

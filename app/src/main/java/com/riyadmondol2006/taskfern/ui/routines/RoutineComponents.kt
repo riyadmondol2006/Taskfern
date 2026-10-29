@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.routines
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import com.riyadmondol2006.taskfern.domain.WeekdayMask
 import com.riyadmondol2006.taskfern.domain.DayState
 import com.riyadmondol2006.taskfern.domain.HistoryDay
@@ -58,7 +59,7 @@ import java.util.Locale
 /** Today's date, re-emitted when the day changes while the screen is open. */
 fun currentDate(): Flow<LocalDate> = flow {
     while (true) {
-        emit(LocalDate.now())
+        emit(LogicalDay.today())
         delay(30_000)
     }
 }.distinctUntilChanged()

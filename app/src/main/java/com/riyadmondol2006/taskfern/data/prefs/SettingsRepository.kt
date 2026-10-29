@@ -45,6 +45,8 @@ data class Settings(
     val onboardingDone: Boolean = false,
     val templatesSeeded: Boolean = false,
     val lastQuickAddListId: Long = 0,
+    /** When a new day begins, minutes after midnight (0 = midnight). See LogicalDay. */
+    val dayStartMinutes: Int = 0,
 ) {
     val defaultReminderTime: LocalTime get() = LocalTime.of(defaultReminderMinutes / 60, defaultReminderMinutes % 60)
 }
@@ -75,6 +77,7 @@ class SettingsRepository(private val context: Context) {
         val onboarding = booleanPreferencesKey("onboarding_done")
         val templatesSeeded = booleanPreferencesKey("templates_seeded")
         val lastQuickAddList = longPreferencesKey("last_quick_add_list")
+        val dayStart = intPreferencesKey("day_start_minutes")
     }
 
     val settings: Flow<Settings> = context.dataStore.data.map { p ->
@@ -100,6 +103,7 @@ class SettingsRepository(private val context: Context) {
             onboardingDone = p[Keys.onboarding] ?: d.onboardingDone,
             templatesSeeded = p[Keys.templatesSeeded] ?: d.templatesSeeded,
             lastQuickAddListId = p[Keys.lastQuickAddList] ?: d.lastQuickAddListId,
+            dayStartMinutes = p[Keys.dayStart] ?: d.dayStartMinutes,
         )
     }.distinctUntilChanged()
 
@@ -127,4 +131,6 @@ class SettingsRepository(private val context: Context) {
     suspend fun setOnboardingDone(value: Boolean) = context.dataStore.edit { it[Keys.onboarding] = value }
     suspend fun setTemplatesSeeded(value: Boolean) = context.dataStore.edit { it[Keys.templatesSeeded] = value }
     suspend fun setLastQuickAddListId(id: Long) = context.dataStore.edit { it[Keys.lastQuickAddList] = id }
+    suspend fun setDayStartMinutes(minutes: Int) =
+        context.dataStore.edit { it[Keys.dayStart] = minutes.coerceIn(0, com.riyadmondol2006.taskfern.domain.LogicalDay.MAX_START_MINUTES) }
 }

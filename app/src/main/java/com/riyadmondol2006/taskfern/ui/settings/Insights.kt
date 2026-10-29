@@ -21,7 +21,7 @@ object InsightsMath {
 
     fun weekDays(start: LocalDate): List<LocalDate> = (0L until 7L).map { start.plusDays(it) }
 
-    fun startOfDayMillis(day: LocalDate, zone: ZoneId): Long = day.atStartOfDay(zone).toInstant().toEpochMilli()
+    fun startOfDayMillis(day: LocalDate, zone: ZoneId): Long = com.riyadmondol2006.taskfern.domain.LogicalDay.startOf(day, zone).toEpochMilli()
 
     /** How many completion timestamps fall on each of [days] (local calendar days in [zone]). */
     fun completionsPerDay(times: List<Long>, days: List<LocalDate>, zone: ZoneId): List<Int> {

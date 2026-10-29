@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.tasks
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
@@ -246,6 +247,6 @@ fun SelectionTopBar(
         },
     )
     if (datePicker) {
-        DatePickerSheet(initial = LocalDate.now(), onPick = { vm.rescheduleSelected(it) }, onDismiss = { datePicker = false })
+        DatePickerSheet(initial = LogicalDay.today(), onPick = { vm.rescheduleSelected(it) }, onDismiss = { datePicker = false })
     }
 }

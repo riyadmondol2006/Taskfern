@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.settings
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -79,7 +80,7 @@ data class StreakEntry(val id: Long, val isRoutine: Boolean, val name: String, v
 class InsightsViewModel(c: AppContainer) : ViewModel() {
     val state = c.settings.settings.map { it.weekStartsMonday }.distinctUntilChanged().flatMapLatest { monday ->
         val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
+        val today = LogicalDay.today()
         val week = InsightsMath.weekDays(InsightsMath.weekStart(today, monday))
         val since = InsightsMath.startOfDayMillis(week.first(), zone)
         val routineWeek = combine(

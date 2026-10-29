@@ -114,4 +114,8 @@
     <string name="settings_widgets_explain">Tap a widget to place it on your home screen. You can also long-press the home screen and choose Widgets.</string>
     <string name="settings_widgets_unsupported">Your launcher can\'t add widgets from here. Long-press the home screen, choose Widgets and look for Taskfern.</string>
     <string name="settings_widgets_add">Add to home screen</string>
+    <string name="settings_day_start">New day starts at</string>
+    <string name="settings_day_start_midnight">Midnight. Today rolls over at 12:00 AM.</string>
+    <string name="settings_day_start_midnight_short">Midnight (default)</string>
+    <string name="settings_day_start_summary">%1$s. Until then, Today, routines and widgets still show the previous day.</string>
 </resources>

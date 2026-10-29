@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.BatterySaver
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.DarkMode
@@ -126,6 +127,7 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     fun setShowShoppingPrices(value: Boolean) = write { setShowShoppingPrices(value) }
     fun setCurrencySymbol(value: String) = write { setCurrencySymbol(value) }
     fun setFocusMinutes(value: Int) = write { setFocusMinutes(value) }
+    fun setDayStartMinutes(value: Int) = write { setDayStartMinutes(value) }
 
     /** Tasks without a time remind at this time, so every alarm is rebuilt. */
     fun setDefaultReminderMinutes(minutes: Int) = write {
@@ -177,7 +179,7 @@ private fun readAccess(context: Context, activity: android.app.Activity?, exact:
     )
 }
 
-private enum class SettingsDialog { NAME, REMINDER_TIME, AGENDA_TIME, CURRENCY, FOCUS }
+private enum class SettingsDialog { NAME, REMINDER_TIME, AGENDA_TIME, CURRENCY, FOCUS, DAY_START }
 
 @Composable
 fun SettingsScreen(nav: AppNavigator) {
@@ -371,6 +373,13 @@ fun SettingsScreen(nav: AppNavigator) {
                         selected = s.weekStartsMonday,
                         onSelect = vm::setWeekStartsMonday,
                     )
+                    SettingsItem(
+                        title = stringResource(R.string.settings_day_start),
+                        summary = if (s.dayStartMinutes == 0) stringResource(R.string.settings_day_start_midnight)
+                        else stringResource(R.string.settings_day_start_summary, Formatters.minutesOfDay(context, s.dayStartMinutes)),
+                        icon = Icons.Outlined.Bedtime,
+                        onClick = { dialog = SettingsDialog.DAY_START },
+                    )
                     SettingsSwitch(
                         title = stringResource(R.string.settings_show_completed_today),
                         summary = stringResource(R.string.settings_show_completed_today_summary),
@@ -497,6 +506,18 @@ fun SettingsScreen(nav: AppNavigator) {
                 onPick = { vm.setDailyAgendaMinutes(it.hour * 60 + it.minute) },
                 onDismiss = { dialog = null },
             )
+            SettingsDialog.DAY_START -> {
+                val choices = listOf(0, 60, 120, 180, 240, 300, 360)
+                ChoiceDialog(
+                    title = stringResource(R.string.settings_day_start),
+                    options = choices.map { m ->
+                        m to if (m == 0) resources.getString(R.string.settings_day_start_midnight_short) else Formatters.minutesOfDay(context, m)
+                    },
+                    selected = s.dayStartMinutes.takeIf { it in choices } ?: -1,
+                    onSelect = vm::setDayStartMinutes,
+                    onDismiss = { dialog = null },
+                )
+            }
             SettingsDialog.FOCUS -> {
                 val choices = (FOCUS_CHOICES + s.focusMinutes).distinct().sorted()
                 ChoiceDialog(

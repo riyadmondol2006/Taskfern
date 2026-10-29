@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.routines
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import com.riyadmondol2006.taskfern.domain.WeekdayMask
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -114,7 +115,7 @@ data class RoutineCard(
 
 data class RoutinesUiState(
     val loaded: Boolean = false,
-    val today: LocalDate = LocalDate.now(),
+    val today: LocalDate = LogicalDay.today(),
     val todayCards: List<RoutineCard> = emptyList(),
     val otherCards: List<RoutineCard> = emptyList(),
     val pausedCards: List<RoutineCard> = emptyList(),
@@ -128,7 +129,7 @@ class RoutinesViewModel(
     settings: SettingsRepository,
     private val templateRepo: TemplateRepository,
 ) : ViewModel() {
-    private val date = currentDate().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LocalDate.now())
+    private val date = currentDate().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LogicalDay.today())
 
     val state: StateFlow<RoutinesUiState> = combine(
         routines.observeRoutines(),

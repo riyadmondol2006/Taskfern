@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.ui.common
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import android.content.Context
 import android.text.format.DateFormat
 import com.riyadmondol2006.taskfern.R
@@ -26,7 +27,7 @@ object Formatters {
     fun minutesOfDay(context: Context, minutes: Int): String = time(context, LocalTime.of(minutes / 60 % 24, minutes % 60))
 
     /** "Today", "Tomorrow", "Yesterday", weekday within the next 6 days, else a short date. */
-    fun relativeDay(context: Context, date: LocalDate, today: LocalDate = LocalDate.now()): String {
+    fun relativeDay(context: Context, date: LocalDate, today: LocalDate = LogicalDay.today()): String {
         val days = ChronoUnit.DAYS.between(today, date)
         return when {
             days == 0L -> context.getString(R.string.today)
@@ -37,7 +38,7 @@ object Formatters {
         }
     }
 
-    fun shortDate(date: LocalDate, today: LocalDate = LocalDate.now()): String {
+    fun shortDate(date: LocalDate, today: LocalDate = LogicalDay.today()): String {
         val skeleton = if (date.year == today.year) "EEE d MMM" else "d MMM yyyy"
         val pattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), skeleton)
         return date.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
@@ -55,7 +56,7 @@ object Formatters {
 
     fun mediumDate(date: LocalDate): String = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
 
-    fun dueLabel(context: Context, date: LocalDate, time: LocalTime?, today: LocalDate = LocalDate.now()): String {
+    fun dueLabel(context: Context, date: LocalDate, time: LocalTime?, today: LocalDate = LogicalDay.today()): String {
         val day = relativeDay(context, date, today)
         return if (time == null) day else "$day ${time(context, time)}"
     }

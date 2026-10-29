@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.widget
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
@@ -18,7 +19,7 @@ class WidgetActionHandler(
     private val tasks: TaskRepository,
     private val shopping: ShoppingRepository,
     private val routines: RoutineRepository,
-    private val today: () -> LocalDate = { LocalDate.now() },
+    private val today: () -> LocalDate = { LogicalDay.today() },
 ) {
     /**
      * Completes the occurrence that was on screen. Returns false when the task had already moved on (completed,

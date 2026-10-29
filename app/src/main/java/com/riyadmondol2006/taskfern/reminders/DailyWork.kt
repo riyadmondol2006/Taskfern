@@ -1,5 +1,6 @@
 package com.riyadmondol2006.taskfern.reminders
 
+import com.riyadmondol2006.taskfern.domain.LogicalDay
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -28,7 +29,8 @@ object DailyWork {
 
     fun scheduleRollover(context: Context) {
         val now = LocalDateTime.now()
-        val next = LocalDate.now().plusDays(1).atTime(0, 1)
+        // One minute after the user's day start (midnight by default).
+        val next = LogicalDay.nextStart(now).plusMinutes(1)
         val request = OneTimeWorkRequestBuilder<DayRolloverWorker>()
             .setInitialDelay(Duration.between(now, next).toMillis().coerceAtLeast(0), TimeUnit.MILLISECONDS)
             .build()
@@ -42,7 +44,7 @@ object DailyWork {
             return
         }
         val now = LocalDateTime.now()
-        var next = LocalDate.now().atTime(LocalTime.of(minuteOfDay / 60, minuteOfDay % 60))
+        var next = LogicalDay.today().atTime(LocalTime.of(minuteOfDay / 60, minuteOfDay % 60))
         if (!next.isAfter(now)) next = next.plusDays(1)
         val request = OneTimeWorkRequestBuilder<DailyAgendaWorker>()
             .setInitialDelay(Duration.between(now, next).toMillis(), TimeUnit.MILLISECONDS)
@@ -66,7 +68,7 @@ class DailyAgendaWorker(context: Context, params: WorkerParameters) : CoroutineW
         val c = (applicationContext as TaskfernApp).container
         val settings = c.settings.current()
         if (settings.dailyAgendaEnabled) {
-            val today = LocalDate.now()
+            val today = LogicalDay.today()
             val rows = c.tasks.observeDueOnOrBefore(today).first()
             val ctx = applicationContext
             if (rows.isNotEmpty()) {
