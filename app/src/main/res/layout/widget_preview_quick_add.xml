@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static picker preview (Android 12+); the real widget is drawn by Glance. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_preview_pill"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
+    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/widget_ic_add" android:tint="#FFFFFFFF" android:importantForAccessibility="no" />
+</LinearLayout>

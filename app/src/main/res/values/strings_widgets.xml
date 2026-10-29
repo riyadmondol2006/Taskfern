@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget picker: names and descriptions -->
+    <string name="widget_today_label">Today\'s tasks</string>
+    <string name="widget_today_picker_description">Overdue and due-today tasks with check-off, progress and Quick Add</string>
+    <string name="widget_quick_add_label">Quick Add</string>
+    <string name="widget_quick_add_picker_description">One tap to add a task to the list and day you choose</string>
+    <string name="widget_shopping_label">Shopping list</string>
+    <string name="widget_shopping_picker_description">Tick off items from one shopping list</string>
+    <string name="widget_agenda_label">Weekly agenda</string>
+    <string name="widget_agenda_picker_description">Your next 7 days, grouped by day</string>
+    <string name="widget_routine_label">Daily routine</string>
+    <string name="widget_routine_picker_description">Tick off today\'s steps of a routine</string>
+
+    <!-- Shared -->
+    <string name="widget_priority_high">High priority</string>
+    <string name="widget_priority_medium">Medium priority</string>
+    <string name="widget_priority_low">Low priority</string>
+    <plurals name="widget_overdue_count">
+        <item quantity="one">%d overdue</item>
+        <item quantity="other">%d overdue</item>
+    </plurals>
+    <plurals name="widget_more_in_app">
+        <item quantity="one">%d more · open Taskfern</item>
+        <item quantity="other">%d more · open Taskfern</item>
+    </plurals>
+
+    <!-- Today -->
+    <string name="widget_today_title">Today</string>
+    <plurals name="widget_tasks_left">
+        <item quantity="one">%d left</item>
+        <item quantity="other">%d left</item>
+    </plurals>
+    <plurals name="widget_left_label">
+        <item quantity="one">task left</item>
+        <item quantity="other">tasks left</item>
+    </plurals>
+    <plurals name="widget_done_today">
+        <item quantity="one">%d done today</item>
+        <item quantity="other">%d done today</item>
+    </plurals>
+    <string name="widget_progress_fraction">%1$d/%2$d</string>
+    <plurals name="widget_progress_description">
+        <item quantity="one">%1$d of %2$d task done today</item>
+        <item quantity="other">%1$d of %2$d tasks done today</item>
+    </plurals>
+    <string name="widget_all_clear">All clear for today</string>
+    <string name="widget_all_clear_short">All clear</string>
+    <string name="widget_all_clear_body">Nothing left due. Enjoy the calm.</string>
+    <string name="widget_open_today">Open Today</string>
+    <string name="widget_add_task_today">Add a task for today</string>
+    <string name="widget_complete_task">Complete %1$s</string>
+    <string name="widget_overdue_since">Overdue · %1$s</string>
+
+    <!-- Quick Add -->
+    <string name="widget_quick_add_title">New task</string>
+    <string name="widget_quick_add_description">New task in %1$s</string>
+    <string name="widget_quick_add_description_due">New task in %1$s, due %2$s</string>
+
+    <!-- Shopping -->
+    <plurals name="widget_items_left">
+        <item quantity="one">%d to buy</item>
+        <item quantity="other">%d to buy</item>
+    </plurals>
+    <string name="widget_shopping_done">Nothing left to buy</string>
+    <string name="widget_shopping_done_body">Items you add in Taskfern show up here.</string>
+    <string name="widget_shopping_add">Add an item to %1$s</string>
+    <string name="widget_shopping_check">Mark %1$s as bought</string>
+    <string name="widget_shopping_no_lists">No shopping lists yet</string>
+    <string name="widget_shopping_no_lists_body">Create a list in Taskfern to see it here.</string>
+    <string name="widget_open_shopping">Open Shopping</string>
+    <string name="widget_list_deleted">The chosen list was deleted. Tap to pick another.</string>
+
+    <!-- Agenda -->
+    <string name="widget_agenda_title">Next 7 days</string>
+    <string name="widget_open_calendar">Open Calendar</string>
+    <string name="widget_overdue_open">%1$s, open Today</string>
+    <string name="widget_nothing_due">Nothing due</string>
+    <string name="widget_agenda_empty">Nothing planned this week</string>
+    <string name="widget_agenda_empty_body">Tasks with a date in the next 7 days show up here.</string>
+
+    <!-- Routine -->
+    <plurals name="widget_routine_progress">
+        <item quantity="one">%1$d of %2$d step done</item>
+        <item quantity="other">%1$d of %2$d steps done</item>
+    </plurals>
+    <string name="widget_routine_not_scheduled">Not scheduled today</string>
+    <string name="widget_routine_next">Next: %1$s</string>
+    <string name="widget_routine_all_done">All done for today</string>
+    <string name="widget_routine_no_steps">No steps yet</string>
+    <string name="widget_routine_none">No routines yet</string>
+    <string name="widget_routine_none_body">Create a routine in Taskfern to tick it off here.</string>
+    <string name="widget_open_routines">Open Routines</string>
+    <string name="widget_open_routine">Open %1$s</string>
+    <string name="widget_routine_deleted">The chosen routine was deleted. Tap to pick another.</string>
+    <string name="widget_step_check">Mark %1$s done</string>
+    <string name="widget_step_uncheck">Mark %1$s not done</string>
+
+    <!-- Configuration screens -->
+    <string name="widget_config_quick_add_title">Quick Add widget</string>
+    <string name="widget_config_shopping_title">Shopping list widget</string>
+    <string name="widget_config_routine_title">Routine widget</string>
+    <string name="widget_config_list_section">Add tasks to</string>
+    <string name="widget_config_due_section">Due date</string>
+    <string name="widget_config_shopping_section">Show this list</string>
+    <string name="widget_config_routine_section">Show this routine</string>
+    <string name="widget_config_first_list">Always my first list</string>
+    <string name="widget_config_first_routine">Always my first routine</string>
+    <string name="widget_config_no_shopping">You have no shopping lists yet. The widget shows your first list once you create one.</string>
+    <string name="widget_config_no_routines">You have no routines yet. The widget shows your first routine once you create one.</string>
+    <string name="widget_config_every_day">Every day</string>
+    <string name="widget_config_no_days">No days selected</string>
+    <string name="widget_config_save_failed">Could not save the widget settings. Please try again.</string>
+
+    <!-- Picker previews (static sample content) -->
+    <string name="widget_preview_today_meta">3 left · 1 overdue</string>
+    <string name="widget_preview_task_1">Water the ferns</string>
+    <string name="widget_preview_task_2">Call the dentist</string>
+    <string name="widget_preview_task_3">Send the invoice</string>
+    <string name="widget_preview_time">9:30</string>
+    <string name="widget_preview_shopping_name">Groceries</string>
+    <string name="widget_preview_shopping_meta">4 to buy</string>
+    <string name="widget_preview_item_1">Oat milk</string>
+    <string name="widget_preview_item_2">Tomatoes</string>
+    <string name="widget_preview_item_3">Sourdough bread</string>
+    <string name="widget_preview_qty_1">2 l</string>
+    <string name="widget_preview_qty_2">500 g</string>
+    <string name="widget_preview_routine_emoji">🌿</string>
+    <string name="widget_preview_routine_name">Morning routine</string>
+    <string name="widget_preview_routine_meta">1 of 3 done</string>
+    <string name="widget_preview_step_1">Glass of water</string>
+    <string name="widget_preview_step_2">Stretch for 10 minutes</string>
+    <string name="widget_preview_step_3">Plan the day</string>
+    <string name="widget_preview_day_1">Today</string>
+    <string name="widget_preview_day_2">Tomorrow</string>
+</resources>
