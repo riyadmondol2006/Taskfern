@@ -107,10 +107,17 @@ private class NavControllerNavigator(
     override fun quickAdd(listId: Long?, dueToday: Boolean, dueDate: java.time.LocalDate?) =
         onQuickAdd(QuickAddDefaults(listId = listId, dueToday = dueToday, dueDate = dueDate))
 
+    /** Bottom-bar navigation: each tab keeps its own back stack. */
     fun switchTab(route: Route) = nav.navigate(route) {
         popUpTo(nav.graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+
+    /** Deep links (notifications, widgets, shortcuts) land on the tab's first screen, never on a saved sub-screen. */
+    fun openTabRoot(route: Route) = nav.navigate(route) {
+        popUpTo(nav.graph.findStartDestination().id)
+        launchSingleTop = true
     }
 }
 
@@ -141,7 +148,7 @@ fun TaskfernAppRoot(pendingDeepLink: Uri?, onDeepLinkHandled: () -> Unit) {
 
     LaunchedEffect(pendingDeepLink) {
         if (pendingDeepLink != null) {
-            handleDeepLink(pendingDeepLink, navigator, navigator::switchTab)
+            handleDeepLink(pendingDeepLink, navigator, navigator::openTabRoot)
             onDeepLinkHandled()
         }
     }

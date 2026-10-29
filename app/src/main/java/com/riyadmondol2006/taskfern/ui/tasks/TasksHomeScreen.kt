@@ -270,7 +270,7 @@ private fun SmartViewTile(label: String, icon: ImageVector, count: Int, tint: Co
                 contentAlignment = Alignment.Center,
             ) { Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp)) }
             Spacer(Modifier.width(12.dp))
-            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f), maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (count > 0) Text(count.toString(), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
