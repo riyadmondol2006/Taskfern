@@ -204,6 +204,12 @@ interface TaskDao {
     @Query("SELECT * FROM subtasks WHERE task_id = :taskId ORDER BY position, id")
     suspend fun subtasks(taskId: Long): List<SubtaskEntity>
 
+    @Query("SELECT * FROM subtasks WHERE task_id = :taskId ORDER BY position, id")
+    fun observeSubtasks(taskId: Long): Flow<List<SubtaskEntity>>
+
+    @Query("SELECT * FROM subtasks WHERE id = :id")
+    suspend fun getSubtask(id: Long): SubtaskEntity?
+
     @Insert
     suspend fun insertSubtask(subtask: SubtaskEntity): Long
 
@@ -211,10 +217,23 @@ interface TaskDao {
     suspend fun insertSubtasks(subtasks: List<SubtaskEntity>)
 
     @Update
-    suspend fun updateSubtask(subtask: SubtaskEntity)
+    suspend fun updateSubtask(subtask: SubtaskEntity): Int
+
+    @Query("UPDATE subtasks SET done = :done WHERE id = :id")
+    suspend fun setSubtaskDone(id: Long, done: Boolean): Int
+
+    @Query("UPDATE subtasks SET title = :title WHERE id = :id")
+    suspend fun renameSubtask(id: Long, title: String): Int
+
+    @Query("UPDATE subtasks SET position = :position WHERE id = :id")
+    suspend fun setSubtaskPosition(id: Long, position: Int)
+
+    /** Makes room at [position] for a subtask put back by undo. */
+    @Query("UPDATE subtasks SET position = position + 1 WHERE task_id = :taskId AND position >= :position")
+    suspend fun shiftSubtasksFrom(taskId: Long, position: Int)
 
     @Query("DELETE FROM subtasks WHERE id = :id")
-    suspend fun deleteSubtask(id: Long)
+    suspend fun deleteSubtask(id: Long): Int
 
     @Query("UPDATE subtasks SET done = 0 WHERE task_id = :taskId")
     suspend fun resetSubtasks(taskId: Long)

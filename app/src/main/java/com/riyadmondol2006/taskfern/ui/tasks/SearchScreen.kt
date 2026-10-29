@@ -146,6 +146,7 @@ fun SearchScreen(nav: AppNavigator) {
                         onToggle = { vm.toggle(row) },
                         onClick = { nav.openTask(row.task.id) },
                         streak = streaks[row.task.id]?.current ?: 0,
+                        subtasks = vm,
                     )
                 }
             }

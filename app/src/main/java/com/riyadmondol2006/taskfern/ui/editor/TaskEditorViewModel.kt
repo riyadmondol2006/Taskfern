@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -75,8 +74,7 @@ class TaskEditorViewModel(
     /** The stored task (completion state, anchor, timestamps) — live. */
     val task: StateFlow<TaskEntity?> = tasks.observeDetails(taskId).map { it?.task }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-    val subtasks: StateFlow<List<SubtaskEntity>> = tasks.observeDetails(taskId).map { d -> d?.subtasks?.sortedWith(compareBy({ it.position }, { it.id })) ?: emptyList() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val subtasks: StateFlow<List<SubtaskEntity>> = tasks.observeSubtasks(taskId).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val log: StateFlow<List<OccurrenceLogEntity>> = tasks.observeLog(taskId).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     val streak: StateFlow<Streak> = tasks.observeStreak(taskId).stateIn(viewModelScope, SharingStarted.Eagerly, Streak.NONE)
     val lists: StateFlow<List<TaskListEntity>> = tasks.observeLists().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -219,18 +217,15 @@ class TaskEditorViewModel(
 
     // Subtasks apply immediately.
     fun addSubtask(title: String) = viewModelScope.launch { tasks.addSubtask(taskId, title) }
-    fun toggleSubtask(s: SubtaskEntity) = viewModelScope.launch { tasks.updateSubtask(s.copy(done = !s.done)) }
-    fun renameSubtask(s: SubtaskEntity, title: String) = viewModelScope.launch {
-        if (title.isNotBlank()) tasks.updateSubtask(s.copy(title = title.trim()))
-    }
+    fun addSubtasks(titles: List<String>) = viewModelScope.launch { tasks.addSubtasks(taskId, titles) }
+    fun setSubtaskDone(s: SubtaskEntity, done: Boolean) = viewModelScope.launch { tasks.setSubtaskDone(s.id, done) }
+    fun renameSubtask(s: SubtaskEntity, title: String) = viewModelScope.launch { tasks.renameSubtask(s.id, title) }
     fun deleteSubtask(s: SubtaskEntity) = viewModelScope.launch { tasks.deleteSubtask(s) }
-    fun moveSubtask(s: SubtaskEntity, delta: Int) = viewModelScope.launch {
-        val list = subtasks.first().toMutableList()
-        val i = list.indexOfFirst { it.id == s.id }
-        val j = i + delta
-        if (i < 0 || j !in list.indices) return@launch
-        list.add(j, list.removeAt(i))
-        tasks.reorderSubtasks(list)
+    fun moveSubtask(s: SubtaskEntity, delta: Int) = viewModelScope.launch { tasks.moveSubtask(s.id, delta) }
+
+    /** Undo from the snackbar, which can outlive this screen: runs on the app scope. */
+    fun restoreSubtask(s: SubtaskEntity) {
+        appScope.launch { tasks.restoreSubtask(s) }
     }
 
     override fun onCleared() {

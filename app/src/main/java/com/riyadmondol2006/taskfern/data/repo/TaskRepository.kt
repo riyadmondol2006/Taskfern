@@ -15,6 +15,7 @@ import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceEngine
 import com.riyadmondol2006.taskfern.domain.recurrence.RecurrenceRule
 import com.riyadmondol2006.taskfern.domain.OccurrenceRecord
 import com.riyadmondol2006.taskfern.domain.Streak
+import com.riyadmondol2006.taskfern.domain.SubtaskLogic
 import com.riyadmondol2006.taskfern.domain.TaskStreaks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -411,29 +412,108 @@ class TaskRepository(
 
     // ---- Subtasks ----------------------------------------------------------------------------------------------------
 
-    suspend fun addSubtask(taskId: Long, title: String) {
-        val clean = title.trim().takeIf { it.isNotEmpty() } ?: return
-        val added = db.withTransaction {
+    /** The task's subtasks in their order, live. Empty when the task (or its last subtask) is gone. */
+    fun observeSubtasks(taskId: Long): Flow<List<SubtaskEntity>> = dao.observeSubtasks(taskId)
+
+    /** Adds a subtask at the end. Returns its id, or null when the title is blank or the task no longer exists. */
+    suspend fun addSubtask(taskId: Long, title: String): Long? {
+        val clean = SubtaskLogic.cleanTitle(title) ?: return null
+        val id = db.withTransaction {
             // The task may have been deleted meanwhile (another screen, a widget); adding to it would break the database.
-            if (dao.get(taskId) == null) return@withTransaction false
+            if (dao.get(taskId) == null) return@withTransaction null
             dao.insertSubtask(SubtaskEntity(taskId = taskId, title = clean, position = dao.nextSubtaskPosition(taskId)))
+        }
+        if (id != null) events.tasksChanged(listOf(taskId))
+        return id
+    }
+
+    /** Adds several subtasks at the end, in the given order (e.g. pasted lines). Returns how many were added. */
+    suspend fun addSubtasks(taskId: Long, titles: List<String>): Int {
+        val clean = titles.mapNotNull(SubtaskLogic::cleanTitle)
+        if (clean.isEmpty()) return 0
+        val added = db.withTransaction {
+            if (dao.get(taskId) == null) return@withTransaction 0
+            val first = dao.nextSubtaskPosition(taskId)
+            dao.insertSubtasks(clean.mapIndexed { i, t -> SubtaskEntity(taskId = taskId, title = t, position = first + i) })
+            clean.size
+        }
+        if (added > 0) events.tasksChanged(listOf(taskId))
+        return added
+    }
+
+    /** Ticks or unticks a subtask. Safe on a subtask (or task) deleted meanwhile: nothing happens. */
+    suspend fun setSubtaskDone(subtaskId: Long, done: Boolean) {
+        val taskId = db.withTransaction {
+            val s = dao.getSubtask(subtaskId) ?: return@withTransaction null
+            if (s.done == done) return@withTransaction null
+            dao.setSubtaskDone(subtaskId, done)
+            s.taskId
+        }
+        if (taskId != null) events.tasksChanged(listOf(taskId))
+    }
+
+    /** Renames a subtask; a blank title is ignored. Safe on a subtask deleted meanwhile. */
+    suspend fun renameSubtask(subtaskId: Long, title: String) {
+        val clean = SubtaskLogic.cleanTitle(title) ?: return
+        val taskId = db.withTransaction {
+            val s = dao.getSubtask(subtaskId) ?: return@withTransaction null
+            if (s.title == clean) return@withTransaction null
+            dao.renameSubtask(subtaskId, clean)
+            s.taskId
+        }
+        if (taskId != null) events.tasksChanged(listOf(taskId))
+    }
+
+    /** Writes a whole subtask row. Does nothing when the subtask or its task no longer exists. */
+    suspend fun updateSubtask(subtask: SubtaskEntity) {
+        val changed = db.withTransaction {
+            if (dao.get(subtask.taskId) == null || dao.getSubtask(subtask.id) == null) return@withTransaction false
+            val clean = SubtaskLogic.cleanTitle(subtask.title) ?: return@withTransaction false
+            dao.updateSubtask(subtask.copy(title = clean)) > 0
+        }
+        if (changed) events.tasksChanged(listOf(subtask.taskId))
+    }
+
+    /** Deletes a subtask (the last one too). Keep [subtask] to put it back with [restoreSubtask]. */
+    suspend fun deleteSubtask(subtask: SubtaskEntity): Boolean {
+        val deleted = dao.deleteSubtask(subtask.id) > 0
+        if (deleted) events.tasksChanged(listOf(subtask.taskId))
+        return deleted
+    }
+
+    /**
+     * Undo for [deleteSubtask]: puts the subtask back with its id, title, tick and place in the order. Does nothing
+     * when the task was deleted meanwhile or the subtask is already back.
+     */
+    suspend fun restoreSubtask(subtask: SubtaskEntity): Boolean {
+        val restored = db.withTransaction {
+            if (dao.get(subtask.taskId) == null || dao.getSubtask(subtask.id) != null) return@withTransaction false
+            val position = subtask.position.coerceAtLeast(0)
+            dao.shiftSubtasksFrom(subtask.taskId, position)
+            dao.insertSubtask(subtask.copy(position = position))
             true
         }
-        if (added) events.tasksChanged(listOf(taskId))
+        if (restored) events.tasksChanged(listOf(subtask.taskId))
+        return restored
     }
 
-    suspend fun updateSubtask(subtask: SubtaskEntity) {
-        dao.updateSubtask(subtask)
-        events.tasksChanged(listOf(subtask.taskId))
+    /** Moves a subtask [delta] places (negative = up). Returns false when it is gone or already at that end. */
+    suspend fun moveSubtask(subtaskId: Long, delta: Int): Boolean {
+        val taskId = db.withTransaction {
+            val s = dao.getSubtask(subtaskId) ?: return@withTransaction null
+            val order = SubtaskLogic.move(dao.subtasks(s.taskId).map { it.id }, subtaskId, delta) ?: return@withTransaction null
+            order.forEachIndexed { i, id -> dao.setSubtaskPosition(id, i) }
+            s.taskId
+        }
+        if (taskId != null) events.tasksChanged(listOf(taskId))
+        return taskId != null
     }
 
-    suspend fun deleteSubtask(subtask: SubtaskEntity) {
-        dao.deleteSubtask(subtask.id)
-        events.tasksChanged(listOf(subtask.taskId))
-    }
-
+    /** Persists a manual order of one task's subtasks, top to bottom. Only positions change. */
     suspend fun reorderSubtasks(subtasks: List<SubtaskEntity>) {
-        db.withTransaction { subtasks.forEachIndexed { i, s -> dao.updateSubtask(s.copy(position = i)) } }
+        if (subtasks.isEmpty()) return
+        db.withTransaction { subtasks.forEachIndexed { i, s -> dao.setSubtaskPosition(s.id, i) } }
+        events.tasksChanged(subtasks.map { it.taskId }.distinct())
     }
 
     // ---- Lists -------------------------------------------------------------------------------------------------------

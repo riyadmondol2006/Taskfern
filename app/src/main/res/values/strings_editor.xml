@@ -15,9 +15,6 @@
     <string name="editor_repeat_explain">Completing marks only this occurrence done and moves the task to its next date. Stop repeating to end the series.</string>
     <string name="editor_add_tag">Add a tag</string>
     <string name="editor_remove_tag">Remove tag %1$s</string>
-    <string name="editor_add_step">Add a step</string>
-    <string name="editor_remove_step">Remove step %1$s</string>
-    <string name="editor_checklist_progress">Checklist · %1$d of %2$d</string>
     <string name="editor_created">Created %1$s</string>
     <string name="editor_completed_at">Completed %1$s</string>
     <string name="editor_series_history">Repeat history</string>

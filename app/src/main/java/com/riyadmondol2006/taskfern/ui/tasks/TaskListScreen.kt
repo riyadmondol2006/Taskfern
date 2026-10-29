@@ -346,6 +346,7 @@ fun TaskListScreen(nav: AppNavigator, view: String, listId: Long) {
                             onSwipeComplete = if (vm.isOpenMode) ({ vm.toggle(row) }) else null,
                             onSwipeDelete = { vm.delete(listOf(row.task.id)) },
                             streak = streaks[row.task.id]?.current ?: 0,
+                            subtasks = vm,
                         )
                     }
                 }

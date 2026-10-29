@@ -238,7 +238,7 @@ fun TodayScreen(nav: AppNavigator) {
                         AnimatedVisibility(expanded) {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 state.completedToday.forEach { row ->
-                                    TaskItem(row, onToggle = { vm.toggle(row) }, onClick = { nav.openTask(row.task.id) })
+                                    TaskItem(row, onToggle = { vm.toggle(row) }, onClick = { nav.openTask(row.task.id) }, subtasks = vm)
                                 }
                             }
                         }
@@ -262,6 +262,7 @@ private fun TodayTask(row: TaskRow, vm: TodayViewModel, nav: AppNavigator, selec
         onSwipeComplete = { vm.toggle(row) },
         onSwipeDelete = { vm.delete(listOf(row.task.id)) },
         streak = streak,
+        subtasks = vm,
     )
 }
 
