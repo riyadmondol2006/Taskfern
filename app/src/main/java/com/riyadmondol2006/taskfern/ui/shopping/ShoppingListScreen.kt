@@ -560,7 +560,7 @@ private fun ShoppingItemRow(
     val haptic = LocalHapticFeedback.current
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val qty = ShoppingLogic.quantityLabel(item.quantity, item.unit)
-    val line = if (showPrices) ShoppingLogic.lineTotalCents(item.priceCents, item.quantity) else null
+    val line = if (showPrices) ShoppingLogic.lineTotalCents(item.priceCents, item.quantity, item.unit) else null
     val editLabel = stringResource(R.string.shopping_edit_item, item.name)
     val deleteLabel = stringResource(R.string.action_delete)
 

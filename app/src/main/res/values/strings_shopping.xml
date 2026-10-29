@@ -85,8 +85,8 @@
     <string name="shopping_item_quantity">Quantity</string>
     <string name="shopping_item_unit">Unit</string>
     <string name="shopping_item_unit_hint">kg, pack, bottle…</string>
-    <string name="shopping_item_price">Price per unit</string>
-    <string name="shopping_item_price_help">Optional. Used for the estimated total.</string>
+    <string name="shopping_item_price">Price</string>
+    <string name="shopping_item_price_help">Optional. Per piece for counted items; for the whole amount for weights and volumes (g, kg, l…).</string>
     <string name="shopping_item_price_invalid">Use a number like 2.50</string>
     <string name="shopping_item_price_line">%1$s comes to %2$s</string>
     <string name="shopping_item_note">Note</string>

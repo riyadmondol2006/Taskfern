@@ -66,6 +66,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.R
+import com.riyadmondol2006.taskfern.ui.common.fabLabel
 import com.riyadmondol2006.taskfern.data.db.ShoppingListWithCounts
 import com.riyadmondol2006.taskfern.data.db.TemplateEntity
 import com.riyadmondol2006.taskfern.data.db.TemplateKind
@@ -170,6 +171,8 @@ fun ShoppingHomeScreen(nav: AppNavigator) {
                     icon = { Icon(Icons.Outlined.Add, null) },
                     expanded = fabExpanded,
                     onClick = { creating = true },
+                    // Explicit label: TalkBack does not always see the text of an extended FAB.
+                    modifier = Modifier.fabLabel(R.string.shopping_new_list),
                 )
             }
         },

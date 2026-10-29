@@ -122,9 +122,17 @@ object ShoppingLogic {
         return formatQuantity(existing + added) to eu
     }
 
-    /** Price of one line: the unit price times a numeric quantity (or once when there is no readable quantity). */
-    fun lineTotalCents(priceCents: Long?, quantity: String): Long? {
+    /** Weights and volumes: "500 g" at €2.49 means the 500 g cost €2.49, not 500 × €2.49. */
+    private val measureUnits = setOf("g", "gr", "kg", "mg", "lb", "lbs", "oz", "l", "ml", "cl", "dl")
+
+    /**
+     * Price of one line. For counted items ("6", "2 packs") the price is per piece and is multiplied by the quantity;
+     * for weights and volumes ("500 g", "2 l") the price is for the whole amount. Without a readable quantity the price
+     * counts once.
+     */
+    fun lineTotalCents(priceCents: Long?, quantity: String, unit: String = ""): Long? {
         if (priceCents == null) return null
+        if (unit.trim().lowercase() in measureUnits) return priceCents
         val multiplier = parseQuantity(quantity) ?: 1.0
         return (priceCents * multiplier).roundToLong()
     }
@@ -136,7 +144,7 @@ object ShoppingLogic {
         var priced = 0
         var unpriced = 0
         items.forEach { item ->
-            val line = lineTotalCents(item.priceCents, item.quantity)
+            val line = lineTotalCents(item.priceCents, item.quantity, item.unit)
             if (line == null) {
                 unpriced++
             } else {

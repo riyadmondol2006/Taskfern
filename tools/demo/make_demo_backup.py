@@ -108,7 +108,7 @@ for args in [
     (1, "Bananas", "Produce", "6", "", False, 30), (1, "Spinach", "Produce", "1", "bag", False, 199),
     (1, "Tomatoes", "Produce", "500", "g", True, 249), (1, "Avocados", "Produce", "2", "", False, 150),
     (1, "Sourdough bread", "Bakery", "1", "loaf", False, 395), (1, "Oat milk", "Dairy & eggs", "2", "l", False, 179),
-    (1, "Eggs", "Dairy & eggs", "12", "", True, 329), (1, "Greek yogurt", "Dairy & eggs", "1", "", False, 249),
+    (1, "Eggs", "Dairy & eggs", "1", "dozen", True, 329), (1, "Greek yogurt", "Dairy & eggs", "1", "", False, 249),
     (1, "Salmon fillets", "Meat & fish", "2", "", False, 899), (1, "Basmati rice", "Pantry", "1", "kg", False, 289),
     (1, "Olive oil", "Pantry", "1", "bottle", False, 749), (1, "Coffee beans", "Pantry", "250", "g", False, 699),
     (1, "Dish soap", "Household", "1", "", False, 249),

@@ -68,6 +68,7 @@ import com.riyadmondol2006.taskfern.R
 import com.riyadmondol2006.taskfern.data.db.TaskRow
 import com.riyadmondol2006.taskfern.reminders.Notifications
 import com.riyadmondol2006.taskfern.ui.common.EmptyState
+import com.riyadmondol2006.taskfern.ui.common.fabLabel
 import com.riyadmondol2006.taskfern.ui.common.Formatters
 import com.riyadmondol2006.taskfern.ui.common.SectionHeader
 import com.riyadmondol2006.taskfern.ui.common.TaskItem
@@ -119,11 +120,14 @@ fun TodayScreen(nav: AppNavigator) {
         },
         floatingActionButton = {
             if (!selecting) {
+                val addLabel = stringResource(R.string.action_add_task)
                 ExtendedFloatingActionButton(
                     onClick = { nav.quickAdd(dueToday = true) },
                     icon = { Icon(Icons.Filled.Add, null) },
-                    text = { Text(stringResource(R.string.action_add_task)) },
+                    text = { Text(addLabel) },
                     expanded = !listState.canScrollBackward,
+                    // Explicit label so TalkBack (and UI tests) always find the button, also when it is collapsed.
+                    modifier = Modifier.fabLabel(R.string.action_add_task),
                 )
             }
         },

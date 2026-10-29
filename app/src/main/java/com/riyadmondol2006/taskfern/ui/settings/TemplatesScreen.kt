@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.riyadmondol2006.taskfern.AppContainer
 import com.riyadmondol2006.taskfern.R
+import com.riyadmondol2006.taskfern.ui.common.fabLabel
 import com.riyadmondol2006.taskfern.data.db.TemplateEntity
 import com.riyadmondol2006.taskfern.data.db.TemplateKind
 import com.riyadmondol2006.taskfern.ui.common.ConfirmDialog
@@ -140,6 +141,8 @@ fun TemplatesScreen(nav: AppNavigator) {
                 onClick = { creating = true },
                 icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
                 text = { Text(stringResource(R.string.templates_new)) },
+                // Explicit label: TalkBack does not always see the text of an extended FAB.
+                modifier = Modifier.fabLabel(R.string.templates_new),
             )
         },
     ) { padding ->

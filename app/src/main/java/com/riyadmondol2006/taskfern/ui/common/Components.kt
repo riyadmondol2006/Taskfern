@@ -428,3 +428,10 @@ fun TimePickerDialog(
         text = { TimePicker(state = state) },
     )
 }
+
+/** Accessibility label for an extended FAB, whose text TalkBack does not reliably read on its own. */
+@Composable
+fun Modifier.fabLabel(@androidx.annotation.StringRes label: Int): Modifier {
+    val text = stringResource(label)
+    return this.semantics(mergeDescendants = true) { contentDescription = text }
+}

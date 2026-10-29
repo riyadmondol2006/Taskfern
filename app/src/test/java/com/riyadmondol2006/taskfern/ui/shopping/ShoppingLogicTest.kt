@@ -126,6 +126,12 @@ class ShoppingLogicTest {
         assertNull(ShoppingLogic.lineTotalCents(null, "2"))
     }
 
+    @Test fun weightsAndVolumesArePricedPerLine() {
+        assertEquals(249L, ShoppingLogic.lineTotalCents(249, "500", "g"))
+        assertEquals(179L, ShoppingLogic.lineTotalCents(179, "2", "L"))
+        assertEquals(398L, ShoppingLogic.lineTotalCents(199, "2", "packs"))
+    }
+
     @Test fun totalsSplitRemainingAndCart() {
         val items = listOf(
             item(1, "Rice", quantity = "2", price = 150),

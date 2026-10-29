@@ -155,7 +155,7 @@ fun ShoppingItemSheet(
             }
             if (showPrices) {
                 Spacer(Modifier.height(8.dp))
-                val line = (parsedPrice as? PriceInput.Valid)?.let { ShoppingLogic.lineTotalCents(it.cents, quantity) }
+                val line = (parsedPrice as? PriceInput.Valid)?.let { ShoppingLogic.lineTotalCents(it.cents, quantity, unit) }
                 val qtyNumber = ShoppingLogic.parseQuantity(quantity)
                 OutlinedTextField(
                     value = price,
