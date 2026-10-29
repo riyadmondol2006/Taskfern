@@ -81,7 +81,8 @@ open class TaskActionsViewModel(protected val tasks: TaskRepository) : ViewModel
             if (row.task.isCompleted) {
                 tasks.reopen(row.task.id)
             } else {
-                val undo = tasks.complete(row.task.id) ?: return@launch
+                // The due date the row showed: a second fast tap finds the task already moved on and does nothing.
+                val undo = tasks.complete(row.task.id, expectedDue = row.task.dueDate, checkExpected = true) ?: return@launch
                 val next = tasks.get(row.task.id)?.takeIf { !it.isCompleted }?.dueDate
                 _events.emit(TaskEvent.Completed(row.task.title, undo, if (row.task.isRecurring) next else null))
             }

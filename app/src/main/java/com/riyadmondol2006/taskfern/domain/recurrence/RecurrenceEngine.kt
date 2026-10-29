@@ -55,13 +55,9 @@ object RecurrenceEngine {
             return next.takeUnless { rule.endDate != null && it.isAfter(rule.endDate) }
         }
 
-        var next = occurrenceAfter(rule, anchor, currentDue) ?: return null
-        // Catch up past missed occurrences. Bounded so a corrupt rule can never spin forever.
-        var guard = 0
-        while (!next.isAfter(today) && guard++ < 10_000) {
-            next = occurrenceAfter(rule, anchor, next) ?: return null
-        }
-        return next
+        // Missed occurrences are skipped in one step: the first occurrence after both the current due date and today.
+        // occurrenceAfter is arithmetic (no day-by-day loop for long gaps), so a task overdue for years is still instant.
+        return occurrenceAfter(rule, anchor, maxOf(currentDue, today))
     }
 
     /**

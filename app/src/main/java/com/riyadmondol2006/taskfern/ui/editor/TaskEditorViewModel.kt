@@ -149,7 +149,7 @@ class TaskEditorViewModel(
             if (t.isCompleted) {
                 tasks.reopen(taskId)
             } else {
-                val undo = tasks.complete(taskId) ?: return@launch
+                val undo = tasks.complete(taskId, expectedDue = t.dueDate, checkExpected = true) ?: return@launch
                 val after = tasks.get(taskId)
                 if (after != null && !after.isCompleted) {
                     // A repeating task moved on: reflect the new due date in the editor.

@@ -12,6 +12,8 @@ import java.time.Clock
 sealed interface AddItemResult {
     data class Added(val id: Long) : AddItemResult
     data class AlreadyOnList(val existing: ShoppingItemEntity) : AddItemResult
+    /** The list was deleted meanwhile (e.g. from another screen); nothing was added. */
+    data object ListGone : AddItemResult
 }
 
 /** Parsed "2 kg rice" style input. */
@@ -85,6 +87,7 @@ class ShoppingRepository(
         val name = input.name.trim()
         require(name.isNotEmpty()) { "An item needs a name" }
         val result = db.withTransaction {
+            if (dao.getList(listId) == null) return@withTransaction AddItemResult.ListGone
             if (!allowDuplicate) {
                 dao.findUncheckedByName(listId, nameKey(name))?.let { return@withTransaction AddItemResult.AlreadyOnList(it) }
             }
@@ -101,7 +104,7 @@ class ShoppingRepository(
             remember(name, cat, input.unit.trim().ifEmpty { memory?.unit.orEmpty() }, memory?.lastPriceCents)
             AddItemResult.Added(id)
         }
-        events.shoppingChanged(listOf(listId))
+        if (result !is AddItemResult.ListGone) events.shoppingChanged(listOf(listId))
         return result
     }
 
@@ -127,10 +130,7 @@ class ShoppingRepository(
         events.shoppingChanged(listOf(item.listId))
     }
 
-    suspend fun restoreItem(item: ShoppingItemEntity) {
-        dao.insertItem(item)
-        events.shoppingChanged(listOf(item.listId))
-    }
+    suspend fun restoreItem(item: ShoppingItemEntity) = restoreItems(listOf(item))
 
     suspend fun clearChecked(listId: Long): List<ShoppingItemEntity> {
         val removed = db.withTransaction {
@@ -142,10 +142,14 @@ class ShoppingRepository(
         return removed
     }
 
+    /** Undo for deletions. Items whose list no longer exists are dropped instead of breaking the database. */
     suspend fun restoreItems(items: List<ShoppingItemEntity>) {
         if (items.isEmpty()) return
-        dao.insertItems(items)
-        events.shoppingChanged(items.map { it.listId }.distinct())
+        val restored = db.withTransaction {
+            val liveLists = items.map { it.listId }.distinct().filter { dao.getList(it) != null }.toSet()
+            items.filter { it.listId in liveLists }.also { if (it.isNotEmpty()) dao.insertItems(it) }
+        }
+        if (restored.isNotEmpty()) events.shoppingChanged(restored.map { it.listId }.distinct())
     }
 
     suspend fun uncheckAll(listId: Long) {

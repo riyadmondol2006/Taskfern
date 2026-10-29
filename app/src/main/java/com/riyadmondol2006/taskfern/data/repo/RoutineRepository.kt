@@ -110,9 +110,13 @@ class RoutineRepository(
 
     /** Ticks or unticks a step for [date]. Idempotent, so repeated widget taps never flip it back unexpectedly. */
     suspend fun setStepChecked(stepId: Long, routineId: Long, date: LocalDate, checked: Boolean) {
-        if (checked) dao.insertCheck(RoutineCheckEntity(stepId, routineId, date, now()))
-        else dao.deleteCheck(stepId, date)
-        events.routinesChanged(listOf(routineId))
+        val changed = db.withTransaction {
+            // A widget or screen may still show a step that was deleted; ticking it must not break the database.
+            if (dao.getSteps(routineId).none { it.id == stepId }) return@withTransaction false
+            if (checked) dao.insertCheck(RoutineCheckEntity(stepId, routineId, date, now())) else dao.deleteCheck(stepId, date)
+            true
+        }
+        if (changed) events.routinesChanged(listOf(routineId))
     }
 
     suspend fun toggleStep(stepId: Long, routineId: Long, date: LocalDate) {

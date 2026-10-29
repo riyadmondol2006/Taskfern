@@ -69,8 +69,10 @@ object Formatters {
     }
 
     fun money(cents: Long, symbol: String): String {
-        val whole = cents / 100
-        val frac = (kotlin.math.abs(cents) % 100).toString().padStart(2, '0')
-        return if (symbol.isEmpty()) "$whole.$frac" else "$symbol$whole.$frac"
+        val sign = if (cents < 0) "-" else ""
+        // Work on the magnitude as an unsigned decimal string so even Long.MIN_VALUE formats correctly.
+        val digits = (if (cents < 0) (-(cents + 1)).toULong() + 1u else cents.toULong()).toString().padStart(3, '0')
+        val amount = digits.dropLast(2) + "." + digits.takeLast(2)
+        return "$sign$symbol$amount"
     }
 }

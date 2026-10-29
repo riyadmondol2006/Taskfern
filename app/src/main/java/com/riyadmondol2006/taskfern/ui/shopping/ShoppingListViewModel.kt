@@ -117,6 +117,8 @@ class ShoppingListViewModel(
                     val e = result.existing
                     _duplicate.value = DuplicatePrompt(e, input, ShoppingLogic.mergeQuantity(e.quantity, e.unit, input.quantity, input.unit))
                 }
+                // The list was deleted elsewhere; the screen reacts to the list disappearing.
+                AddItemResult.ListGone -> _duplicate.value = null
             }
         }
     }

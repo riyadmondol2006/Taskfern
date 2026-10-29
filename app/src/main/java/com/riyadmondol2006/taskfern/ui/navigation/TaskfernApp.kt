@@ -171,7 +171,15 @@ fun TaskfernAppRoot(pendingDeepLink: Uri?, onDeepLinkHandled: () -> Unit) {
                         selected = selected,
                         onClick = { navigator.switchTab(item.route) },
                         icon = { Icon(if (selected) item.selectedIcon else item.icon, contentDescription = null) },
-                        label = { Text(stringResource(item.label)) },
+                        // One line even at the largest font sizes: never break a label mid-word.
+                        label = {
+                            Text(
+                                stringResource(item.label),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            )
+                        },
                     )
                 }
             },

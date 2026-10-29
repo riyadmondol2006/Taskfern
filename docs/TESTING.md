@@ -4,8 +4,8 @@
 
 | Suite | Command | Where | Result (2026-10-29) |
 | --- | --- | --- | --- |
-| JVM unit tests | `./gradlew :app:testDebugUnitTest` | `app/src/test` | 196 passed, 0 failed |
-| Instrumented tests | `./gradlew :app:connectedDebugAndroidTest` | `app/src/androidTest` | 25 passed, 0 failed (Pixel 6, Android 17) |
+| JVM unit tests | `./gradlew :app:testDebugUnitTest` | `app/src/test` | 212 passed, 0 failed |
+| Instrumented tests | `./gradlew :app:connectedDebugAndroidTest` | `app/src/androidTest` | 42 passed, 0 failed (Pixel 6, Android 17) |
 | Android Lint | `./gradlew :app:lintDebug` | — | 0 errors, 22 warnings (unused resources, plural suggestions, obsolete SDK checks) |
 | Offline check | `./gradlew :app:verifyOfflineManifestRelease` | build | passes: no network or broad-storage permission |
 | Release verification | `scripts/verify-apk.sh` | CI | signature v2+, not debug-signed, application id, version, no `INTERNET` |
@@ -31,6 +31,47 @@ completion with snapshot + history + exact undo, a repeated widget/notification 
 occurrence, end-after-N, skip, pause/resume, trash/restore/purge, deleting lists, LIKE-wildcard escaping, duplicate,
 3 000 tasks loading under 1.5 s, the exported Room schema, backup round trips (merge and replace), and widget
 action data effects.
+
+## Break-it testing (how users actually break apps)
+
+Automated, in `app/src/test/.../abuse/HostileInputTest.kt` and `app/src/androidTest/.../abuse/UserAbuseTest.kt`:
+
+- **Hostile text**: empty, whitespace, 10 000–20 000 characters, emoji, Arabic, Japanese, Cyrillic, right-to-left
+  override, null bytes, SQL injection, `%` and `_` wildcards, 5 000 random strings — never a crash or empty title;
+  stored and searched exactly.
+- **Absurd dates and rules**: intervals up to 999, anchors from 1970 to 2099, end dates before the start, tasks overdue
+  for decades, dates in year 1900 and 9999, projection limits.
+- **Corrupt backups**: empty, not JSON, wrong format, newer version, duplicate ids, broken references, impossible dates,
+  unknown enum values, zero intervals, 10 000 nested brackets — all rejected; unknown future fields tolerated.
+- **Frantic tapping**: 20 simultaneous completions of one occurrence complete exactly one; a double tap on a row in the
+  app completes one occurrence; undo pressed twice; complete/undo repeated.
+- **Acting on things that are gone** (stale widgets, notifications, second screens): completing, skipping, editing,
+  adding steps to deleted tasks; adding to or restoring items of deleted shopping lists; ticking steps of deleted
+  routines; focusing on a deleted task; nonsense ids.
+- **Concurrency and scale**: ten simultaneous adds of the same item add it once; 10 000 tasks queried in under 3 s.
+
+On the phone:
+
+| Scenario | Result |
+| --- | --- |
+| Random input (Android `monkey`), 7 seeds × 5 000 events, system UI locked so taps could not leave the app | 35 000 events, 0 crashes, 0 ANRs |
+| Edit a title, go Home, app killed (force-stop), reopen | Edit was saved |
+| Typing in Quick Add, rotate to landscape and back | Text and parsed date kept |
+| 80 rapid taps across the bottom tabs | No crash |
+| 600-character pasted title | Saved, searchable, wraps to two lines |
+| Notifications and exact alarms revoked, reminder due | Falls back to an inexact alarm; fires without posting or crashing |
+| Travel: time zone changed Asia/Dhaka → America/New_York and back | All reminders re-armed at the same wall-clock times |
+| Delete the shopping list and routine shown by widgets | Widgets fall back to the remaining list and routine |
+| 10 rapid taps on a widget step | Step ticked once, not flipped back and forth |
+| Font size 2.0× | Usable everywhere; navigation labels ellipsised instead of breaking mid-word |
+| Restore an image renamed to .json and a 30 MB random file | “This isn't a backup file … Nothing was changed” |
+| Delete a task while its reminder notification is showing | Notification removed automatically |
+
+Bugs these tests found and that are fixed: a crash when adding a checklist step, a shopping item or a routine tick to
+something deleted moments earlier (database foreign-key violation); undo of a shopping item after its list was deleted;
+focus timer on a deleted task; a double tap completing two occurrences of a repeating task in the app; long-overdue
+repeating tasks not catching up past ~27 years; negative amounts losing their minus sign; navigation labels breaking
+mid-word at large font sizes.
 
 ## Manual QA on a real device
 

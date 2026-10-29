@@ -375,8 +375,13 @@ class TaskRepository(
 
     suspend fun addSubtask(taskId: Long, title: String) {
         val clean = title.trim().takeIf { it.isNotEmpty() } ?: return
-        dao.insertSubtask(SubtaskEntity(taskId = taskId, title = clean, position = dao.nextSubtaskPosition(taskId)))
-        events.tasksChanged(listOf(taskId))
+        val added = db.withTransaction {
+            // The task may have been deleted meanwhile (another screen, a widget); adding to it would break the database.
+            if (dao.get(taskId) == null) return@withTransaction false
+            dao.insertSubtask(SubtaskEntity(taskId = taskId, title = clean, position = dao.nextSubtaskPosition(taskId)))
+            true
+        }
+        if (added) events.tasksChanged(listOf(taskId))
     }
 
     suspend fun updateSubtask(subtask: SubtaskEntity) {
