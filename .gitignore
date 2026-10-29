@@ -30,3 +30,6 @@ Thumbs.db
 *.apk
 *.aab
 release-dist/
+
+# Local parallel worktrees
+.worktrees/
