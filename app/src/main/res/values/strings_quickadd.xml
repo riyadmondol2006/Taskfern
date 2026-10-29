@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_add_title">New task</string>
+    <string name="quick_add_hint">e.g. Call the dentist tomorrow 10am</string>
+    <string name="quick_add_date">Date</string>
+    <string name="quick_add_time">Time</string>
+    <string name="quick_add_remind_on">Remind</string>
+    <string name="quick_add_remind_off">No reminder</string>
+    <string name="quick_add_next_week">Next week (Monday)</string>
+    <string name="quick_add_pick_date">Pick a date…</string>
+    <string name="quick_add_understood">Understood: %1$s</string>
+    <string name="quick_add_literal">Smart dates off · tap to turn on</string>
+    <plurals name="quick_add_added">
+        <item quantity="one">%d added</item>
+        <item quantity="other">%d added</item>
+    </plurals>
+</resources>

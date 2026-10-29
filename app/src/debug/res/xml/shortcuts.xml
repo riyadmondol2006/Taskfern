@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug copy: same shortcuts, debug package name (applicationIdSuffix ".debug"). -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutId="add_task"
+        android:shortcutLongLabel="@string/shortcut_add_task_long"
+        android:shortcutShortLabel="@string/shortcut_add_task_short">
+        <intent
+            android:action="com.riyadmondol2006.taskfern.action.QUICK_ADD"
+            android:targetClass="com.riyadmondol2006.taskfern.ui.quickadd.QuickAddActivity"
+            android:targetPackage="com.riyadmondol2006.taskfern.debug" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_today"
+        android:shortcutId="today"
+        android:shortcutLongLabel="@string/shortcut_today_long"
+        android:shortcutShortLabel="@string/shortcut_today_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="taskfern://today"
+            android:targetClass="com.riyadmondol2006.taskfern.MainActivity"
+            android:targetPackage="com.riyadmondol2006.taskfern.debug" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_shopping"
+        android:shortcutId="shopping"
+        android:shortcutLongLabel="@string/shortcut_shopping_long"
+        android:shortcutShortLabel="@string/shortcut_shopping_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="taskfern://shopping"
+            android:targetClass="com.riyadmondol2006.taskfern.MainActivity"
+            android:targetPackage="com.riyadmondol2006.taskfern.debug" />
+    </shortcut>
+</shortcuts>

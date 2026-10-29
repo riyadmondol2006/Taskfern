@@ -1,0 +1,32 @@
+# Gradle / build output
+.gradle/
+build/
+/app/build/
+.kotlin/
+
+# Local configuration (SDK path, signing)
+local.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.fleet/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+
+# Release output is published as GitHub Release assets, never committed
+*.apk
+*.aab
+release-dist/
