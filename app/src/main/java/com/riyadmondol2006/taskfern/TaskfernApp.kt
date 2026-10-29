@@ -22,6 +22,8 @@ class TaskfernApp : Application() {
             }
             container.reminders.rescheduleAll(catchUp = false)
             container.scheduleDailyWork()
+            // Widgets redraw with the current day and theme; also starts the updater that follows theme changes.
+            container.widgets.refreshAll()
         }
     }
 }

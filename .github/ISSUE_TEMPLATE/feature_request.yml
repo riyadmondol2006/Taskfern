@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement for Taskfern
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the everyday situation where Taskfern falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+    validations:
+      required: true
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Taskfern principles
+      options:
+        - label: This works fully offline and needs no account.
+          required: true
