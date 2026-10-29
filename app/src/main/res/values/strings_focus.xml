@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Focus timer</string>
+    <string name="focus_on_task">Focusing on “%1$s”</string>
+    <string name="focus_status_ready">Ready</string>
+    <string name="focus_status_running">Focusing</string>
+    <string name="focus_status_paused">Paused</string>
+    <plurals name="focus_minutes_left">
+        <item quantity="one">%d minute left</item>
+        <item quantity="other">%d minutes left</item>
+    </plurals>
+    <plurals name="focus_preset">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <string name="focus_custom">Custom</string>
+    <plurals name="focus_custom_value">
+        <item quantity="one">Custom · %d min</item>
+        <item quantity="other">Custom · %d min</item>
+    </plurals>
+    <string name="focus_custom_title">Session length</string>
+    <string name="focus_custom_label">Minutes</string>
+    <string name="focus_custom_error">Enter 1 to 180 minutes</string>
+    <string name="focus_start">Start</string>
+    <string name="focus_pause">Pause</string>
+    <string name="focus_resume">Resume</string>
+    <string name="focus_stop">Stop</string>
+    <string name="focus_no_notifications">Notifications are off, so the end of a session will only show here in the app.</string>
+    <string name="focus_complete_task">Complete task</string>
+    <string name="focus_history">Recent sessions</string>
+    <string name="focus_history_empty">Your finished sessions will appear here.</string>
+    <plurals name="focus_history_completed">
+        <item quantity="one">%d minute, completed</item>
+        <item quantity="other">%d minutes, completed</item>
+    </plurals>
+    <string name="focus_history_stopped">Stopped after %1$d of %2$d min</string>
+</resources>

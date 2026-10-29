@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings -->
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_reminders">Reminders &amp; notifications</string>
+    <string name="settings_section_tasks">Tasks</string>
+    <string name="settings_section_shopping">Shopping</string>
+    <string name="settings_section_focus">Focus</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_section_more">More</string>
+
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_amoled">AMOLED black</string>
+    <string name="settings_amoled_summary">Pure black backgrounds in dark theme</string>
+    <string name="settings_amoled_light_hint">Only used in dark theme</string>
+    <string name="settings_dynamic_color">Material You colours</string>
+    <string name="settings_dynamic_color_summary">Match the colours of your wallpaper</string>
+    <string name="settings_dynamic_color_unavailable">Needs Android 12 or newer. Pick an accent colour below instead.</string>
+    <string name="settings_accent">Accent colour</string>
+    <string name="settings_accent_summary">Used for buttons, highlights and progress</string>
+    <string name="settings_accent_dynamic_hint">Turn off Material You colours to choose an accent</string>
+    <string name="settings_accent_fern">Fern</string>
+    <string name="settings_accent_moss">Moss</string>
+    <string name="settings_accent_ocean">Ocean</string>
+    <string name="settings_accent_dusk">Dusk</string>
+    <string name="settings_accent_clay">Clay</string>
+    <string name="settings_name">Your name</string>
+    <string name="settings_name_empty">Not set</string>
+    <string name="settings_name_label">Name</string>
+    <string name="settings_name_hint">Used only for the greeting on Today. Leave empty for none.</string>
+
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_on_summary">Reminders, routine nudges and the focus timer can alert you.</string>
+    <string name="settings_notifications_off_summary">Reminders can’t be shown while notifications are off.</string>
+    <string name="settings_notifications_denied">Notifications are off. You can turn them on later in system settings.</string>
+    <string name="settings_exact_alarms">Alarms &amp; reminders</string>
+    <string name="settings_exact_alarms_on_summary">Reminders arrive at the exact minute you set.</string>
+    <string name="settings_exact_alarms_off_summary">Without this permission Android may deliver reminders a few minutes late, especially when the phone is idle.</string>
+    <string name="settings_battery">Battery optimisation</string>
+    <string name="settings_battery_summary">Some phones stop background apps aggressively. If reminders arrive late or not at all, set Taskfern to “Unrestricted” or “Not optimised” in the battery settings.</string>
+    <string name="settings_battery_open">Battery settings</string>
+    <string name="settings_status_allowed">Allowed</string>
+    <string name="settings_status_not_allowed">Not allowed</string>
+    <string name="settings_status_off">Off</string>
+    <string name="settings_status_unrestricted">Unrestricted</string>
+    <string name="settings_status_optimised">Optimised by Android</string>
+    <string name="settings_allow">Allow</string>
+    <string name="settings_open_settings">Open settings</string>
+    <string name="settings_default_reminder">Default reminder time</string>
+    <string name="settings_default_reminder_summary">%1$s, for tasks with a date but no time</string>
+    <string name="settings_auto_reminder">Remind me when I set a due date</string>
+    <string name="settings_auto_reminder_summary">Adds a reminder automatically to newly dated tasks</string>
+    <string name="settings_agenda">Daily agenda</string>
+    <string name="settings_agenda_summary">One quiet summary of the day’s tasks</string>
+    <string name="settings_agenda_time">Agenda time</string>
+
+    <string name="settings_week_start">Week starts on</string>
+    <string name="settings_monday">Monday</string>
+    <string name="settings_sunday">Sunday</string>
+    <string name="settings_show_completed_today">Show completed tasks on Today</string>
+    <string name="settings_show_completed_today_summary">Keep what you finished today visible at the bottom</string>
+    <string name="settings_trash_retention">Keep deleted tasks for</string>
+    <string name="settings_trash_retention_summary">After that, Recently deleted is emptied automatically</string>
+    <plurals name="settings_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="settings_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+
+    <string name="settings_prices">Prices &amp; totals</string>
+    <string name="settings_prices_summary">Add prices to shopping items and see the list total</string>
+    <string name="settings_currency">Currency symbol</string>
+    <string name="settings_currency_none">None</string>
+    <string name="settings_currency_label">Symbol</string>
+    <string name="settings_currency_hint">For example €, $, £ or ৳. Up to 4 characters.</string>
+
+    <string name="settings_focus_length">Default session length</string>
+
+    <string name="settings_backup_summary">Export, restore and calendar export</string>
+    <string name="settings_templates_summary">Ready-made task lists, shopping lists and routines</string>
+    <plurals name="settings_trash_summary">
+        <item quantity="one">Deleted tasks are kept for %d day</item>
+        <item quantity="other">Deleted tasks are kept for %d days</item>
+    </plurals>
+    <string name="settings_archived_summary">Tasks you put away without deleting</string>
+    <string name="settings_insights_summary">A calm look at what you got done</string>
+    <string name="settings_focus_summary">A simple timer for one thing at a time</string>
+    <string name="settings_about_summary">Version, privacy, licences</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_name">Taskfern</string>
+    <string name="about_version">Version %1$s (%2$d)</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy">Taskfern works entirely offline. There is no account, no ads and no trackers, and the app does not even have permission to use the internet. Your tasks, lists and routines stay on this phone unless you export a backup yourself.</string>
+    <string name="about_project">Project</string>
+    <string name="about_source">Source code</string>
+    <string name="about_releases">Releases</string>
+    <string name="about_issues">Report a problem or suggest an idea</string>
+    <string name="about_no_browser">No browser is installed to open this link.</string>
+    <string name="about_license_title">Licence</string>
+    <string name="about_license">Taskfern is free software under the MIT License.\nCopyright © 2026 riyadmondol2006.</string>
+    <string name="about_oss_title">Open-source licences</string>
+    <string name="about_oss_intro">Taskfern is built with these open-source libraries, each published under the Apache License 2.0.</string>
+    <string name="about_apache">Apache-2.0</string>
+    <string name="about_apache_full">Apache License, Version 2.0</string>
+</resources>

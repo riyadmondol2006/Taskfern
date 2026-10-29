@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insights_title">Insights</string>
+    <string name="insights_intro">A quiet look back at your week. Counted on this phone only.</string>
+    <string name="insights_done_today">Done today</string>
+    <string name="insights_open">Open</string>
+    <string name="insights_overdue">Overdue</string>
+    <string name="insights_this_week">Completed this week</string>
+    <plurals name="insights_week_total">
+        <item quantity="one">%d task</item>
+        <item quantity="other">%d tasks</item>
+    </plurals>
+    <string name="insights_week_description">Tasks completed per day this week: %1$s</string>
+    <string name="insights_routines">Routines this week</string>
+    <string name="insights_fraction">%1$d of %2$d</string>
+    <string name="insights_routines_caption">days fully done</string>
+    <string name="insights_routines_none">nothing scheduled yet</string>
+    <string name="insights_focus">Focus this week</string>
+    <plurals name="insights_focus_caption">
+        <item quantity="one">minute</item>
+        <item quantity="other">minutes</item>
+    </plurals>
+    <string name="insights_recent">Recently completed</string>
+    <string name="insights_recent_empty_title">Nothing completed yet</string>
+    <string name="insights_recent_empty">Tasks you complete will show up here.</string>
+</resources>

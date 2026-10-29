@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="templates_title">Templates</string>
+    <string name="templates_intro">Start a task list, shopping list or routine from a template. Edit them to fit the way you work.</string>
+    <string name="templates_kind_tasks">Task lists</string>
+    <string name="templates_kind_shopping">Shopping lists</string>
+    <string name="templates_kind_routine">Routines</string>
+    <string name="templates_kind_tasks_short">Tasks</string>
+    <string name="templates_kind_shopping_short">Shopping</string>
+    <string name="templates_kind_routine_short">Routine</string>
+    <plurals name="templates_item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="templates_use">Use</string>
+    <string name="templates_use_failed">Couldn’t create from this template.</string>
+    <string name="templates_new">New template</string>
+    <string name="templates_edit">Edit template</string>
+    <string name="templates_name">Name</string>
+    <string name="templates_emoji">Emoji</string>
+    <string name="templates_kind">Creates a</string>
+    <string name="templates_items">Items</string>
+    <string name="templates_items_hint">One item per line</string>
+    <string name="templates_delete_title">Delete template?</string>
+    <string name="templates_delete_message">“%1$s” will be removed. Lists and routines already made from it stay as they are.</string>
+    <string name="templates_empty_title">No templates</string>
+    <string name="templates_empty_message">Create one with the button below.</string>
+</resources>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">Backup &amp; restore</string>
+    <string name="backup_intro">Taskfern keeps everything on this phone. A backup is one file that you save wherever you like and can restore on this or another phone.</string>
+    <string name="backup_section_export">Back up</string>
+    <string name="backup_section_restore">Restore</string>
+
+    <string name="backup_export">Export backup</string>
+    <string name="backup_export_summary">Tasks, lists, shopping, routines, templates, focus history and your settings in a single JSON file.</string>
+    <string name="backup_export_button">Export</string>
+    <string name="backup_calendar">Export to calendar (.ics)</string>
+    <string name="backup_calendar_summary">Open tasks with a due date as calendar events, for importing into a calendar app. Repeating tasks repeat there too when the rule has an exact match.</string>
+    <string name="backup_calendar_button">Export calendar</string>
+    <string name="backup_import">Restore from a backup</string>
+    <string name="backup_import_summary">Choose a Taskfern backup file. You’ll see what it contains before anything changes.</string>
+    <string name="backup_import_button">Choose file</string>
+
+    <string name="backup_working_export">Saving backup…</string>
+    <string name="backup_working_calendar">Saving calendar file…</string>
+    <string name="backup_working_read">Checking the backup…</string>
+    <string name="backup_working_import">Restoring…</string>
+
+    <string name="backup_preview_title">Ready to restore</string>
+    <string name="backup_preview_from">Backup from %1$s · Taskfern %2$s</string>
+    <string name="backup_preview_empty">This backup is empty.</string>
+    <string name="backup_restore_settings">Also restore settings</string>
+    <string name="backup_merge">Merge</string>
+    <string name="backup_replace">Replace</string>
+    <string name="backup_merge_explain">Merge keeps everything you have and adds what’s new. Lists, shopping lists and routines with the same name are combined; tasks with the same title and creation time are skipped.</string>
+    <string name="backup_replace_explain">Replace deletes the current data on this phone and restores the backup exactly.</string>
+    <string name="backup_replace_title">Replace all data?</string>
+    <string name="backup_replace_message">This deletes everything currently in Taskfern on this phone (%1$s) and replaces it with the backup. This can’t be undone.</string>
+    <string name="backup_replace_nothing">There’s no data on this phone yet, so nothing will be lost.</string>
+    <string name="backup_replace_hint">Home-screen widgets are kept. If you’re unsure, export a backup of the current data first.</string>
+    <string name="backup_replace_confirm">Delete and replace</string>
+
+    <string name="backup_exported_title">Backup saved</string>
+    <string name="backup_exported">Saved %1$s, plus your settings.</string>
+    <string name="backup_exported_empty">Saved your settings. There are no tasks or lists yet.</string>
+    <string name="backup_merged_title">Backup merged</string>
+    <string name="backup_merged_added">Added %1$s.</string>
+    <string name="backup_merged_nothing">Everything in the backup was already here; nothing was added.</string>
+    <string name="backup_merged_skipped">Skipped as already present: %1$s.</string>
+    <string name="backup_replaced_title">Backup restored</string>
+    <string name="backup_replaced">Restored %1$s.</string>
+    <string name="backup_replaced_empty">The backup was empty, so Taskfern is now empty too.</string>
+    <plurals name="backup_calendar_done">
+        <item quantity="one">Calendar file saved with %d task</item>
+        <item quantity="other">Calendar file saved with %d tasks</item>
+    </plurals>
+    <string name="backup_calendar_empty">Calendar file saved. No open tasks have a due date yet.</string>
+
+    <string name="backup_error_not_json_title">This isn’t a backup file</string>
+    <string name="backup_error_not_json">The file is empty or isn’t JSON. Choose the .json file that Taskfern exported. Nothing was changed.</string>
+    <string name="backup_error_format_title">Not a Taskfern backup</string>
+    <string name="backup_error_format">The file is JSON, but it wasn’t made by Taskfern’s export. Nothing was changed.</string>
+    <string name="backup_error_newer_title">Made by a newer Taskfern</string>
+    <string name="backup_error_newer">This backup uses format version %1$d, and this app reads up to version %2$d. Update Taskfern and try again. Nothing was changed.</string>
+    <string name="backup_error_invalid_title">The backup is damaged</string>
+    <string name="backup_error_invalid">Some data is missing, has unexpected values or points to things that aren’t in the file. Nothing was changed.</string>
+    <string name="backup_error_unreadable_title">Couldn’t read the file</string>
+    <string name="backup_error_unreadable">Android couldn’t open it. If the file is in a cloud folder, make sure it has finished downloading. Nothing was changed.</string>
+    <string name="backup_error_write_title">Couldn’t save the file</string>
+    <string name="backup_error_write">Try another folder or check that there’s free space.</string>
+    <string name="backup_error_import_title">Restore failed</string>
+    <string name="backup_error_import">Something went wrong while restoring, so the change was rolled back. Your data is as it was.</string>
+
+    <plurals name="backup_count_tasks">
+        <item quantity="one">%d task</item>
+        <item quantity="other">%d tasks</item>
+    </plurals>
+    <plurals name="backup_count_lists">
+        <item quantity="one">%d task list</item>
+        <item quantity="other">%d task lists</item>
+    </plurals>
+    <plurals name="backup_count_subtasks">
+        <item quantity="one">%d checklist step</item>
+        <item quantity="other">%d checklist steps</item>
+    </plurals>
+    <plurals name="backup_count_reminders">
+        <item quantity="one">%d reminder</item>
+        <item quantity="other">%d reminders</item>
+    </plurals>
+    <plurals name="backup_count_shopping_lists">
+        <item quantity="one">%d shopping list</item>
+        <item quantity="other">%d shopping lists</item>
+    </plurals>
+    <plurals name="backup_count_shopping_items">
+        <item quantity="one">%d shopping item</item>
+        <item quantity="other">%d shopping items</item>
+    </plurals>
+    <plurals name="backup_count_routines">
+        <item quantity="one">%d routine</item>
+        <item quantity="other">%d routines</item>
+    </plurals>
+    <plurals name="backup_count_routine_steps">
+        <item quantity="one">%d routine step</item>
+        <item quantity="other">%d routine steps</item>
+    </plurals>
+    <plurals name="backup_count_templates">
+        <item quantity="one">%d template</item>
+        <item quantity="other">%d templates</item>
+    </plurals>
+    <plurals name="backup_count_focus">
+        <item quantity="one">%d focus session</item>
+        <item quantity="other">%d focus sessions</item>
+    </plurals>
+    <plurals name="backup_count_history">
+        <item quantity="one">%d history entry</item>
+        <item quantity="other">%d history entries</item>
+    </plurals>
+    <plurals name="backup_count_suggestions">
+        <item quantity="one">%d remembered shopping item</item>
+        <item quantity="other">%d remembered shopping items</item>
+    </plurals>
+</resources>
