@@ -6,6 +6,12 @@ named `vMAJOR.MINOR.BUILD` (see [docs/RELEASING.md](docs/RELEASING.md)); the rel
 ## Unreleased
 
 ### Added
+- Plans: tasks for a week, month or year, with a Plans view and a Today section (database version 2, migrated
+  automatically).
+- Subtasks inside every task: a Subtasks section in the editor and expandable subtasks in every list.
+- Streaks for routines and repeating tasks on Today, task rows, the editor, the routine widget and Insights.
+- Quick Add understands repeats (“every monday and thursday”, “every 3 days”, “monthly”) and plans (“this month”).
+- New day starts at: choose when “today” rolls over.
 - Update check: Taskfern can look for a newer release on GitHub once a day and show a popup with the new version,
   short release notes and **Download** (opens the APK in your browser), **Later** and **Skip this version**. Release
   builds ask once on first start whether to turn it on; *Settings → Updates* has the switch, **Check now**, the last
@@ -15,16 +21,6 @@ named `vMAJOR.MINOR.BUILD` (see [docs/RELEASING.md](docs/RELEASING.md)); the rel
 - Taskfern now has the `INTERNET` permission, used only by the optional update check (one HTTPS request to
   `api.github.com` at most once a day, nothing about you or your tasks is sent). The build and release checks still
   reject network-state, Wi-Fi-state, broad storage and advertising-ID permissions.
-
-## Unreleased
-
-### Added
-- Plans: tasks for a week, month or year, with a Plans view and a Today section (database version 2, migrated
-  automatically).
-- Subtasks inside every task: a Subtasks section in the editor and expandable subtasks in every list.
-- Streaks for routines and repeating tasks on Today, task rows, the editor, the routine widget and Insights.
-- Quick Add understands repeats (“every monday and thursday”, “every 3 days”, “monthly”) and plans (“this month”).
-- New day starts at: choose when “today” rolls over.
 
 ### Fixed
 - Crashes when acting on a task, list or routine that had just been deleted (stale widgets, open screens, undo).
